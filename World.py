@@ -1,7 +1,10 @@
 import logging
 import random
 
+# -- GAME Constants --
 MAP_SIZE = 10
+MAX_SCORE = 22
+
 ## Definition of the various color and when they can trigger their powers
 POWER_PERMANENT = {'rose'}
 POWER_BEFORE = {"violet", "marron"}
@@ -51,12 +54,18 @@ class World:
     def __init__(self, *args, **kwargs):
         pass
 
-    ## Set the position of the given Color
-    def setColorPosition(self, color, pos):
-        if not color in TOTAL_COLORS:
-            raise ValueError("Color %s doesn't exist!"%(color))
+    def _checkPos(self, pos):
         if pos < 0 or pos >= MAP_SIZE:
             raise ValueError("Position %d is not valid"%(pos))
+        
+    def _checkColor(self, color):
+        if not color in TOTAL_COLORS:
+            raise ValueError("Color %s doesn't exist!"%(color))
+
+    ## Set the position of the given Color
+    def setColorPosition(self, color, pos):
+        self._checkColor(color)
+        self._checkPos(pos)
         #Check if color exist in map to remove it
         prev = self.getColorPosition(color)
         if (prev != -1):
@@ -65,6 +74,7 @@ class World:
     
     ## Get the position of the given color
     def getColorPosition(self, color):
+        self._checkColor(color)
         for id_room, room in enumerate(self.game_map):
             if color in room:
                 return id_room
@@ -72,6 +82,8 @@ class World:
     
     ## Get the possible deplacement for a given color and position
     def getPossibleDeplacementFromPos(self, color, cPos):
+        self._checkColor(color)
+        self._checkPos(cPos)
         possible = DEF_ALLOWED_PATH if color != "rose" else ROSE_ALLOWED_PATH
         if self.locked_path == None:
             raise RuntimeError("Locked is not set!")
@@ -90,6 +102,7 @@ class World:
 
     ## Return all the colors found at the given pos
     def getColorsFromPos(self, pos):
+        self._checkPos(pos)
         return self.game_map[pos]
 
     ## Return the current innocents
@@ -102,11 +115,13 @@ class World:
 
     ## Set a color as innocent
     def setInnocentColor(self, color):
+        self._checkColor(color)
         self.non_innocent_colors.remove(color)
         self.innocent_colors.add(color)
 
     ## Set the given room as black (blacktoken_pos)
     def setBlackRoom(self, pos):
+        self._checkPos(pos)
         self.blacktoken_pos = pos
 
     ## Get the black room
@@ -139,6 +154,9 @@ class World:
     ## Get the score of the current game
     def getScore(self):
         return (self.score)
+
+    def isGameEnded(self):
+        return len(self.non_innocent_colors) == 1 or self.score == MAX_SCORE
 
 if __name__ == "__main__":
     #Test the World class
