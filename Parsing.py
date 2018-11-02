@@ -114,7 +114,7 @@ class Parser :
       file = open(self.infoPath, 'r')
       infos = file.read()
       file.close()
-      return infos
+      return self.getInfoTour(infos)
 
 ## Read the question file then parse the question
     def readQuestion(self):
