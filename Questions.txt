@@ -1,0 +1,3 @@
+Tuiles disponibles : [gris-4-suspect, blanc-3-suspect, violet-2-suspect, noir-5-suspect] choisir entre 0 et 3
+Voulez-vous activer le pouvoir (0/1) ?
+positions disponibles : set([8, 5]), choisir la valeur
