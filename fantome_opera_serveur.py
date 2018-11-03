@@ -1,9 +1,10 @@
 from random import shuffle,randrange
 from time import sleep
 from threading import Thread
-import dummy0, dummy1
+import runner
+from ia_fopera import dummy0, dummy1
 
-latence = 0.001
+latence = 0.01
 permanents, deux, avant, apres = {'rose'}, {'rouge','gris','bleu'}, {'violet','marron'}, {'noir','blanc'}
 couleurs = avant | permanents | apres | deux
 passages = [{1,4},{0,2},{1,3},{2,7},{0,5,8},{4,6},{5,7},{3,6,9},{4,9},{7,8}]
@@ -98,7 +99,7 @@ class joueur:
                     return [q for q in party.personnages if p.position == q.position]
                 if p.couleur == "gris":
                     w = demander("Quelle salle obscurcir ? (0-9)",self)
-                    party.shadow = int(w) if w.isnumeric() and int(w) in range(10) else (party.shadow+1)%10
+                    party.shadow = int(w) if w.isnumeric() and int(w) in range(10) else 0
                     informer("REPONSE INTERPRETEE : "+str(party.shadow))
                 if p.couleur == "bleu":
                     w = demander("Quelle salle bloquer ? (0-9)",self)
@@ -123,8 +124,11 @@ class joueur:
 class partie:
     def __init__(self,joueurs):
         for i in [0,1]:
-            f = open("./"+str(i)+"/infos"+".txt","w")
-            f.write("")
+            f = open("./" + str(i) + "/infos.txt","w")
+            f.close()
+            f = open("./" + str(i) + "/questions.txt","w")
+            f.close()
+            f = open("./" + str(i) + "/reponses.txt","w")
             f.close()
         self.joueurs = joueurs
         self.start, self.end, self.num_tour, self.shadow, x = 4, 22, 1, randrange(10), randrange(10)
@@ -133,7 +137,7 @@ class partie:
         self.tuiles = [p for p in self.personnages]
         self.cartes = self.tuiles[:]
         self.fantome = self.cartes[randrange(8)]
-        message("!!! Le fantôme est : "+self.fantome.couleur,[self.joueurs[0]])
+        message("!!! Le fantôme est : "+self.fantome.couleur,[self.joueurs[1]])
         self.cartes.remove(self.fantome)
         self.cartes += ['fantome']*3
         
@@ -179,19 +183,10 @@ class partie:
             self.tour()
         informer("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
         informer("Score final : "+str(self.end-self.start))
-        return self.end-self.start
     def __repr__(self):
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
 
-score = []
 joueurs = [joueur(0),joueur(1)]
-nbparties = 20
-for i in range(nbparties):
-    t1,t2 = Thread(target=dummy0.lancer), Thread(target=dummy1.lancer)
-    t1.start()
-    t2.start()
-    score.append(partie(joueurs).lancer())
-    t1.join()
-    t2.join()
-victoires = [x for x in score if x<=0]
-print("Efficacité : "+str(len(victoires)/nbparties*100)+"%")
+Thread(target=runner.lancer).start()
+Thread(target=dummy1.lancer).start()
+partie(joueurs).lancer()
