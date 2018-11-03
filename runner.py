@@ -21,26 +21,28 @@ def lancer():
     d = Detective(world)
     while (not world.isGameEnded()):
         infos = parser.readInfo()
-        logging.info("Got info tour %s"%(infos))
-        time.sleep(1)
+        # time.sleep(1)
         if infos['InfoStatus'] == INFO_STATUS.OK:
+                logging.info("Got info tour %s"%(infos))
                 world.setStatus(infos)
         elif infos['InfoStatus'] == INFO_STATUS.END:
                 break
         elif infos['InfoStatus'] == INFO_STATUS.PLACEMENT:
+                logging.info("Got info tour %s"%(infos))
                 world.updateTuiles(infos['Data'])
         question = parser.readQuestion()
         world.updateState(question)
-        logging.info("Got question %s"%(question))
         answer = ""
         if question["QuestionType"] == QUESTION_TYPE.MOVE:
+                logging.info("Got question %s"%(question))
                 answer = d.nextPos(question["Data"])
         elif question["QuestionType"] == QUESTION_TYPE.POWER:
+                logging.info("Got question %s"%(question))
                 answer = d.powerChoice()
         elif question["QuestionType"] == QUESTION_TYPE.TUILES:
+                logging.info("Got question %s"%(question))
                 answer = d.selectTuile(question["Data"])
-        logging.info("IA Answer: %s"%(answer))
         parser.writeAnswer(answer)
-        time.sleep(1)
+        # time.sleep(1)
     world.printMap()
     logging.info("END IA")
