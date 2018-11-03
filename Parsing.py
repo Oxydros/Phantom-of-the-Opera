@@ -135,5 +135,4 @@ class Parser :
 if __name__ == "__main__":
   test = Parser(PLAYER_TYPE.DETECTIVE)
   tmp = test.readInfo()
-  lol = test.getInfoTour(tmp)
-  print(lol)
+  print(tmp)
