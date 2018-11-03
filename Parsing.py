@@ -28,23 +28,23 @@ class Parser :
 
     def __init__(self, player_type, *args):
       if (player_type == PLAYER_TYPE.GHOST) :
-        self.responsePath = './1/responses.txt'
+        self.responsesPath = './1/reponses.txt'
         self.questionsPath = './1/questions.txt'
         self.infoPath = './1/infos.txt'
         self.getGhost()
       else :
-        self.responsePath = './0/responses.txt'
+        self.responsesPath = './0/reponses.txt'
         self.questionsPath = './0/questions.txt'
         self.infoPath = './0/infos.txt'
 
 
 ## return a dictionnary with the information parsed at the beginning of a turn
     def getInfoTour(self, strInfo) :
-      listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\[(.*)\]\)\n(.*)', strInfo)
+      listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\{(.*)}\n(.*)', strInfo)
       if (len(listInfoTourFound) == 0) :
         return {
           "InfoStatus" : INFO_TYPE.ERROR,
-          "Data" : "Regex doesn't find anything",
+          "Data" : "File is empty",
         }
       lastInfoTourFound = listInfoTourFound[-1]
       if (self.cmp(lastInfoTourFound, self.oldInfoTour) == 0) :
@@ -53,7 +53,7 @@ class Parser :
           "Data" : "Still the same turn",
         }
       infoTour =	{
-        "InfoStus": INFO_TYPE.OK,
+        "InfoStatus": INFO_TYPE.OK,
         "Tour": lastInfoTourFound[0],
         "Score": lastInfoTourFound[1],
         "Ombre": lastInfoTourFound[2],
@@ -69,7 +69,9 @@ class Parser :
       ghostColorLine = file.readline()
       ghostColor = re.search(r': (.*)', ghostColorLine)
       file.close()
-      return (ghostColor.group(1))                                         
+      if (ghostColor) :
+        return (ghostColor.group(1))
+      return 'No Color'                                         
 
 ## check if there is a new question
     def checkNewQuestion(self, question):
@@ -103,13 +105,18 @@ class Parser :
 ## Return positions available from the question (list)
     def parsePosition(self, question) :
       regex = re.search(r'\[(.*)\]', question)
-      positionsAvailable = regex.group(1).replace(' ', '')
-      listPositionsAvailable = positionsAvailable.split(',')
-      questionParsed = {
-        "QuestionType" : QUESTION_TYPE.MOVE,
-        "Data" : listPositionsAvailable,
+      if (regex) :
+        positionsAvailable = regex.group(1).replace(' ', '')
+        listPositionsAvailable = positionsAvailable.split(',')
+        questionParsed = {
+          "QuestionType" : QUESTION_TYPE.MOVE,
+          "Data" : listPositionsAvailable,
+        }
+        return questionParsed
+      return {
+        "QuestionType": QUESTION_TYPE.ERROR,
+        "Data" : regex
       }
-      return questionParsed
 
 ## Return answer available from the question (list)
     def parsePower(self, question) :
@@ -149,6 +156,7 @@ class Parser :
 
 ## Write in the answerFile file
     def writeAnswer(self, answer):
+      print(self.responsesPath)
       file = open(self.responsesPath, 'w')
       file.write(answer)
       file.close()
