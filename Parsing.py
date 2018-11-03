@@ -23,6 +23,7 @@ class Parser :
     infoPath = ''
 
 
+    ## Helpful function to 
     def cmp(self, a, b):
       return (a > b) - (a < b) 
 
