@@ -11,11 +11,20 @@ class QUESTION_TYPE(Enum):
       POWER = 2
       MOVE = 3
 
+class INFO_TYPE(Enum):
+      ERROR = 0
+      OK = 1
+
 class Parser :
     oldQuestion = ''
+    oldInfoTour = ()
     responsesPath = ''
     questionsPath = ''
     infoPath = ''
+
+
+    def cmp(self, a, b):
+      return (a > b) - (a < b) 
 
     def __init__(self, player_type, *args):
       if (player_type == PLAYER_TYPE.GHOST) :
@@ -33,13 +42,20 @@ class Parser :
     def getInfoTour(self, strInfo) :
       listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\[(.*)\]\)\n(.*)', strInfo)
       lastInfoTourFound = listInfoTourFound[-1]
+      if (self.cmp(lastInfoTourFound, self.oldInfoTour) == 0) :
+        return {
+          "InfoStatus" : INFO_TYPE.ERROR,
+          "Data" : "Still the same turn",
+        }
       infoTour =	{
+        "InfoStus": INFO_TYPE.OK,
         "Tour": lastInfoTourFound[0],
         "Score": lastInfoTourFound[1],
         "Ombre": lastInfoTourFound[2],
         "Lock" : lastInfoTourFound[3],
         "Tuiles" : lastInfoTourFound[4],
       }
+      self.oldInfoTour = lastInfoTourFound
       return infoTour
 
 ## get the Ghost color
