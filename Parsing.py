@@ -21,6 +21,7 @@ class INFO_STATUS(Enum):
 class Parser :
     oldQuestion = ''
     oldInfoTour = ()
+    oldLastPlacement = []
     responsesPath = ''
     questionsPath = ''
     infoPath = ''
@@ -72,9 +73,14 @@ class Parser :
         allNewPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', strInfo)
         allNewPlacement.reverse()
         listLastPlacement = self.getLastPlacement(allNewPlacement)
+        if (self.cmp(listLastPlacement, self.oldLastPlacement) == 0) :
+          return {
+            "InfoStatus" : INFO_STATUS.PLACEMENT,
+            "Data" : listLastPlacement,
+          }
         return {
-          "InfoStatus" : INFO_STATUS.PLACEMENT,
-          "Data" : listLastPlacement,
+          "InfoStatus" : INFO_STATUS.ERROR,
+          "Data" : 'Nothing Change'
         }
       listTuilesAvailable = lastInfoTourFound[4].split('  ')
       listTuiles = []
