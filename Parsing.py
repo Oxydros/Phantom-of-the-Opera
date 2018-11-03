@@ -73,7 +73,8 @@ class Parser :
         allNewPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', strInfo)
         allNewPlacement.reverse()
         listLastPlacement = self.getLastPlacement(allNewPlacement)
-        if (self.cmp(listLastPlacement, self.oldLastPlacement) == 0) :
+        if (self.cmp(listLastPlacement, self.oldLastPlacement) != 0) :
+          self.oldLastPlacement = listLastPlacement
           return {
             "InfoStatus" : INFO_STATUS.PLACEMENT,
             "Data" : listLastPlacement,
@@ -91,7 +92,6 @@ class Parser :
           'pos': int(tuileInfo[1]),
           'state' : tuileInfo[2]
         })
-      print("LAST INF ", lastInfoTourFound[3])
       regex = re.search(r'(\d*), (\d*)', lastInfoTourFound[3])
       lock = {int(regex.group(1)), int(regex.group(2))}
       infoTour =	{
@@ -208,7 +208,6 @@ class Parser :
 
 ## Write in the answerFile file
     def writeAnswer(self, answer):
-      print(self.responsesPath)
       file = open(self.responsesPath, 'w')
       file.write(answer)
       file.close()
@@ -216,4 +215,3 @@ class Parser :
 if __name__ == "__main__":
   test = Parser(PLAYER_TYPE.DETECTIVE)
   tmp = test.readInfo()
-  print(tmp)
