@@ -1,5 +1,6 @@
 import logging
 import random
+from Parsing import QUESTION_TYPE
 
 # -- GAME Constants --
 MAP_SIZE = 10
@@ -43,13 +44,15 @@ class World:
     ## MAP
     game_map = [set() for i in range(MAP_SIZE)]
     ## Position of the special items
-    blacktoken_pos = None
+    blacktoken_pos = 0
     #Locked of the form [roomA, roomB]
     locked_path = []
     ## Current non innocent
     non_innocent_colors = TOTAL_COLORS.copy()
     innocent_colors = set()
     score = 0
+    tour = 0
+    status = {}
 
     def __init__(self, *args, **kwargs):
         pass
@@ -116,8 +119,11 @@ class World:
     ## Set a color as innocent
     def setInnocentColor(self, color):
         self._checkColor(color)
-        self.non_innocent_colors.remove(color)
-        self.innocent_colors.add(color)
+        try:
+            self.non_innocent_colors.remove(color)
+            self.innocent_colors.add(color)
+        except KeyError:
+            pass
 
     ## Set the given room as black (blacktoken_pos)
     def setBlackRoom(self, pos):
@@ -141,8 +147,10 @@ class World:
     ## Print the MAP
     def printMap(self):
         print("---- GAME MAP ----")
+        print("Tour is %d and score is %d"%(self.tour, self.score))
         print("Blocked path is %s"%(self.locked_path))
         print("Dark room is %d"%(self.blacktoken_pos))
+        print("Cleaned: %s"%(self.innocent_colors))
         for id_room, room in enumerate(self.game_map):
             print("Room %d: %s"%(id_room, room))
         print("---------------")
@@ -157,6 +165,49 @@ class World:
 
     def isGameEnded(self):
         return len(self.non_innocent_colors) == 1 or self.score == MAX_SCORE
+
+    def setTour(self, newTour):
+        self.tour = newTour
+
+    def getTour(self):
+        return self.tour
+
+    ## Set the current status of the game
+    ## Fetch by the Parser in infos.txt
+    def setStatus(self, status):
+        self.status = status
+        self.updateTuiles(status["Tuiles"])
+        self.setBlackRoom(status["Ombre"])
+        self.setBlockedPath(status["Lock"])
+        self.setScore(status['Score'])
+        self.setTour(status['Tour'])
+
+    ## Get the current status of the game
+    ## Fetch by the Parser in infos.txt
+    def getStatus(self):
+        return self.status
+
+    ## Update the state of the world depending on the questions
+    def updateState(self, questionInfos):
+        if questionInfos["QuestionType"] == QUESTION_TYPE.MOVE:
+            pass
+        elif questionInfos["QuestionType"] == QUESTION_TYPE.POWER:
+            pass
+        elif questionInfos["QuestionType"] == QUESTION_TYPE.TUILES:
+            self.updateTuiles(questionInfos["Data"])
+    
+    ## Update local tuiles infos
+    def updateTuiles(self, tuilesInfos):
+        #For each tuiles
+        for t in tuilesInfos:
+            color = t['color']
+            pos = t['pos']
+            state = t['state']
+            #Update the position
+            self.setColorPosition(color, pos)
+            #Update the state
+            if state == 'clean':
+                self.setInnocentColor(color)
 
 if __name__ == "__main__":
     #Test the World class

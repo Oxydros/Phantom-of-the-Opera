@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 
+
 class PLAYER_TYPE(Enum):
       DETECTIVE = 0
       GHOST = 1
@@ -11,9 +12,11 @@ class QUESTION_TYPE(Enum):
       POWER = 2
       MOVE = 3
 
-class INFO_TYPE(Enum):
+class INFO_STATUS(Enum):
       ERROR = 0
       OK = 1
+      PLACEMENT = 2
+      END = 3
 
 class Parser :
     oldQuestion = ''
@@ -39,27 +42,59 @@ class Parser :
         self.infoPath = './0/infos.txt'
 
 
+##DOIS PARSER NOUVEAU PLACEMENT
+
+    def getLastPlacement(self, allNewPlacement) :
+      colourFound = []
+      lastNewPlacement = []
+      for newPlacement in allNewPlacement :
+        newPlacementTab = newPlacement.split('-');
+        if newPlacementTab[0] not in colourFound :
+          lastNewPlacement.append({
+            'color': newPlacementTab[0],
+            'pos': int(newPlacementTab[1]),
+            'state' : newPlacementTab[2]
+          })
+          colourFound.append(newPlacementTab[0])
+      return lastNewPlacement
+
+
 ## return a dictionnary with the information parsed at the beginning of a turn
     def getInfoTour(self, strInfo) :
       listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\{(.*)}\n(.*)', strInfo)
       if (len(listInfoTourFound) == 0) :
         return {
-          "InfoStatus" : INFO_TYPE.ERROR,
+          "InfoStatus" : INFO_STATUS.ERROR,
           "Data" : "File is empty",
         }
       lastInfoTourFound = listInfoTourFound[-1]
       if (self.cmp(lastInfoTourFound, self.oldInfoTour) == 0) :
+        allNewPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', strInfo)
+        allNewPlacement.reverse()
+        listLastPlacement = self.getLastPlacement(allNewPlacement)
         return {
-          "InfoStatus" : INFO_TYPE.ERROR,
-          "Data" : "Still the same turn",
+          "InfoStatus" : INFO_STATUS.PLACEMENT,
+          "Data" : listLastPlacement,
         }
+      listTuilesAvailable = lastInfoTourFound[4].split('  ')
+      listTuiles = []
+      for tuile in listTuilesAvailable :
+        tuileInfo = tuile.split('-');
+        listTuiles.append({
+          'color': tuileInfo[0],
+          'pos': int(tuileInfo[1]),
+          'state' : tuileInfo[2]
+        })
+      print("LAST INF ", lastInfoTourFound[3])
+      regex = re.search(r'(\d*), (\d*)', lastInfoTourFound[3])
+      lock = {int(regex.group(1)), int(regex.group(2))}
       infoTour =	{
-        "InfoStatus": INFO_TYPE.OK,
-        "Tour": lastInfoTourFound[0],
-        "Score": lastInfoTourFound[1],
-        "Ombre": lastInfoTourFound[2],
-        "Lock" : lastInfoTourFound[3],
-        "Tuiles" : lastInfoTourFound[4],
+        "InfoStatus": INFO_STATUS.OK,
+        "Tour": int(lastInfoTourFound[0]),
+        "Score": int(lastInfoTourFound[1]),
+        "Ombre": int(lastInfoTourFound[2]),
+        "Lock" : lock,
+        "Tuiles" : listTuiles,
       }
       self.oldInfoTour = lastInfoTourFound
       return infoTour
@@ -87,25 +122,23 @@ class Parser :
       tuilesAvailable = regex.group(1).replace(' ', '')
       listTuilesAvailable = tuilesAvailable.split(',')
       listColorTuiles = []
-      listPosTuiles = []
-      listStateTuiles = []
       for tuile in listTuilesAvailable :
         tuileInfo = tuile.split('-');
-        listColorTuiles.append(tuileInfo[0])
-        listPosTuiles.append(tuileInfo[1])
-        listStateTuiles.append(tuileInfo[2])
+        listColorTuiles.append({
+          'color': tuileInfo[0],
+          'pos': int(tuileInfo[1]),
+          'state' : tuileInfo[2]
+        })
 
       questionParsed = {
         "QuestionType" : QUESTION_TYPE.TUILES,
-        "ListColorTuiles" : listColorTuiles,
-        "ListPositionTuiles" : listPosTuiles,
-        "ListStateTuiles" : listStateTuiles,
+        "Data" : listColorTuiles,
       }
       return questionParsed
 
 ## Return positions available from the question (list)
     def parsePosition(self, question) :
-      regex = re.search(r'\[(.*)\]', question)
+      regex = re.search(r'{(.*)}', question)
       if (regex) :
         positionsAvailable = regex.group(1).replace(' ', '')
         listPositionsAvailable = positionsAvailable.split(',')
@@ -138,11 +171,23 @@ class Parser :
       elif (question.find('positions') != -1) :
         return self.parsePosition(question)
 
+
+    def checkEndOfGame(self, infostr) :
+      regex = re.search(r'Score final', infostr)
+      if(regex) :
+        return True
+      return False
+
 ## Read the info file
     def readInfo(self) :
       file = open(self.infoPath, 'r')
       infos = file.read()
       file.close()
+      if (self.checkEndOfGame(infos) == True) :
+        return {
+          "InfoStatus" : INFO_STATUS.END,
+          "Data" : 'The game is over',
+        }
       return self.getInfoTour(infos)
 
 ## Read the question file then parse the question

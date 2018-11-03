@@ -4,7 +4,7 @@ from threading import Thread
 import runner
 from ia_fopera import dummy0, dummy1
 
-latence = 0.01
+latence = 2
 permanents, deux, avant, apres = {'rose'}, {'rouge','gris','bleu'}, {'violet','marron'}, {'noir','blanc'}
 couleurs = avant | permanents | apres | deux
 passages = [{1,4},{0,2},{1,3},{2,7},{0,5,8},{4,6},{5,7},{3,6,9},{4,9},{7,8}]
@@ -187,6 +187,14 @@ class partie:
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
 
 joueurs = [joueur(0),joueur(1)]
-Thread(target=runner.lancer).start()
-Thread(target=dummy1.lancer).start()
+t1 = Thread(target=runner.lancer)
+t2 = Thread(target=dummy1.lancer)
+
+t1.daemon = True
+t2.daemon = True
+t1.start()
+t2.start()
 partie(joueurs).lancer()
+
+t1.join()
+t2.join()
