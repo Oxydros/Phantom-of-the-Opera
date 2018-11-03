@@ -41,6 +41,11 @@ class Parser :
 ## return a dictionnary with the information parsed at the beginning of a turn
     def getInfoTour(self, strInfo) :
       listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\[(.*)\]\)\n(.*)', strInfo)
+      if (len(listInfoTourFound) == 0) :
+        return {
+          "InfoStatus" : INFO_TYPE.ERROR,
+          "Data" : "Regex doesn't find anything",
+        }
       lastInfoTourFound = listInfoTourFound[-1]
       if (self.cmp(lastInfoTourFound, self.oldInfoTour) == 0) :
         return {
