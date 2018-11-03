@@ -36,4 +36,4 @@ class Detective():
     def powerChoice(self):
         logging.info("Use power %d"%(self.selectedPower[self.powerQ]))
         self.powerQ += 1
-        return str(self.selectedPower[self.powerQ])
+        return str(0)

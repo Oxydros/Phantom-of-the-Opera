@@ -73,7 +73,7 @@ class Parser :
         allNewPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', strInfo)
         allNewPlacement.reverse()
         listLastPlacement = self.getLastPlacement(allNewPlacement)
-        if (self.cmp(listLastPlacement, self.oldLastPlacement) != 0) :
+        if (listLastPlacement != self.oldLastPlacement) :
           self.oldLastPlacement = listLastPlacement
           return {
             "InfoStatus" : INFO_STATUS.PLACEMENT,
@@ -176,6 +176,9 @@ class Parser :
         return self.parsePower(question)
       elif (question.find('positions') != -1) :
         return self.parsePosition(question)
+      else :
+        return { "QuestionType" : QUESTION_TYPE.ERROR,
+                "Data" : "Unknow Question"}
 
 
     def checkEndOfGame(self, infostr) :
