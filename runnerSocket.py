@@ -24,20 +24,15 @@ def updateInfos(world, infoData):
         logging.info("Got info tour %s"%(infoData))
         world.updateTuiles(infoData['Data'])
 
-def lancer(agentType):
-    logging.info("Launching %s IA"%(agentType))
-    world = World()
-    parser = Parser(agentType)
-    logging.info("Init network...")
-    parser.initNetwork()
-    logging.info("Done!")
-    d = GameAgent(world, agentType)
-    while (not world.isGameEnded()):
+def loop(world, parser, d):
+    while (True):
         logging.info("Waiting msg...")
         msg = parser.readMsg()
         msgType = msg.type
         logging.info("Got msg of type %s"%(msgType))
         if msgType == "Information":
+            if msg.content == "ResetGame" or msg.content == "EndGame":
+                return msg.content
             infoData = parser.parseInfo(msg.content)
             if infoData['InfoStatus'] == INFO_STATUS.END:
                 break
@@ -57,4 +52,20 @@ def lancer(agentType):
                 print("OUI")
                 logging.info("Got question %s"%(questionData))
                 answer = d.selectTuile(questionData["Data"])
-            parser.sendMsg(answer)
+            parser.sendMsg(answer) 
+    return "Unknown"   
+
+def lancer(agentType):
+    logging.info("Launching %s IA"%(agentType))
+    parser = Parser(agentType)
+    logging.info("Init network...")
+    parser.initNetwork()
+    logging.info("Done!")
+    while True:
+        world = World()
+        d = GameAgent(world, agentType)
+        result = loop(world, parser, d)        
+        logging.info("Got result from game %s"%(result))
+        if result == "EndGame":
+            break
+            

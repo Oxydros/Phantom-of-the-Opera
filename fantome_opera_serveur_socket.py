@@ -189,7 +189,9 @@ class partie:
         while self.start < self.end and len([p for p in self.personnages if p.suspect]) > 1:
             self.tour()
         informer("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
+        print("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
         informer("Score final : "+str(self.end-self.start))
+        print("Score final : "+str(self.end-self.start))
         return self.end - self.start
     def __repr__(self):
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
@@ -208,9 +210,12 @@ def init_connexion():
 
 init_connexion()
 
-for i in range(1000):
+for i in range(50):
     scores.append(partie(joueurs).lancer())
     print("partie : " + str(i))
+    informer("ResetGame")
+
+informer("EndGame")
 
 w0 = [win for win in scores if win <= 0]
 
