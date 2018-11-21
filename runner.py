@@ -42,7 +42,7 @@ def lancer():
         elif question["QuestionType"] == QUESTION_TYPE.TUILES:
                 logging.info("Got question %s"%(question))
                 answer = d.selectTuile(question["Data"])
-        parser.writeAnswer(answer)
+        parser.writeFileAnswer(answer)
         # time.sleep(1)
     world.printMap()
     logging.info("END IA")
