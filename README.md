@@ -19,17 +19,19 @@ When we talk about all of this questions, we will use the E* notation.
 
 We can find different type of informations, defining the state:
 * Position of the colors (room they are in) -> **D0**
-* Score of the game -> **D1**
-* Color of the fantom -> **D2**
-* Was the agent the first one of the "tour" -> **D3**
-* 4 selected colors to play -> **D4**
-* Color choosed to be played -> **D5**
+* Position of the lock -> **D1**
+* Position of the light -> **D2**
+* Score of the game -> **D3**
+* Color of the fantom -> **D4**
+* Was the agent the first one of the "tour" -> **D5**
+* 4 selected colors to play -> **D6**
+* Color choosed to be played -> **D7**
 
-|    | D0 | D1 | D2 | D3 | D4 | D5 | Size |
-|----|----|----|----|----|----|----|------|
-| E0 | X  | X  | X  | X  | X  |    | 107  |
-| E1 | X  | X  | X  | X  |    | X  | 105  |
-| E2 | X  | X  | X  | X  |    | X  | 105  |
+|    | D0 | D1 | D2 | D3 | D4 | D5 | D6 | D7 | Size |
+|----|----|----|----|----|----|----|----|----|------|
+| E0 | X  | X  | X  | X  | X  | X  | X  |    | 107  |
+| E1 | X  | X  | X  | X  | X  | X  |    | X  | 105  |
+| E2 | X  | X  | X  | X  | X  | X  |    | X  | 105  |
 
 ## Realisation
 

@@ -1,10 +1,23 @@
 import logging
 import random
-from Parsing import QUESTION_TYPE
+from AgentTypes import QUESTION_TYPE, PLAYER_TYPE
 
 # -- GAME Constants --
 MAP_SIZE = 10
 MAX_SCORE = 22
+
+COLOR_INTEG = {
+    'rose': 0,
+    'violet': 1,
+    'marron': 2,
+    'noir': 3,
+    'blanc': 4,
+    'rouge' : 5,
+    'gris' : 6,
+    'bleu' : 7
+}
+
+INTEG_COLOR = ['rose', 'violet', 'marron', 'noir', 'blanc', 'rouge', 'gris', 'bleu']
 
 ## Definition of the various color and when they can trigger their powers
 POWER_PERMANENT = {'rose'}
@@ -53,6 +66,10 @@ class World:
     score = 0
     tour = 0
     status = {}
+    ghost_color = 0
+    first_in_tour = 0
+    selected_colors = []
+    current_color = 0
 
     def __init__(self, *args, **kwargs):
         pass
@@ -64,6 +81,9 @@ class World:
     def _checkColor(self, color):
         if not color in TOTAL_COLORS:
             raise ValueError("Color %s doesn't exist!"%(color))
+
+    def setGhostColor(self, color):
+        ghost_color = color
 
     ## Set the position of the given Color
     def setColorPosition(self, color, pos):
@@ -111,7 +131,13 @@ class World:
     ## Return the current innocents
     def getInnocentColors(self):
         return self.innocent_colors
-    
+
+    def isInnocent(self, color):
+        for iColor in self.innocent_colors:
+            if (color == iColor):
+                return True
+        return False
+
     ## Return the list of potential fantoms
     def getPotentialFantoms(self):
         return (self.non_innocent_colors)
@@ -208,6 +234,49 @@ class World:
             #Update the state
             if state == 'clean':
                 self.setInnocentColor(color)
+
+    def setFirstInTour(self, agentId):
+        self.first_in_tour = agentId
+
+    def setSelectedColor(self, colors):
+        self.selected_colors = colors
+
+    def setCurrentPlayedColor(self, color):
+        self.current_color = color
+
+    def getQLearningData(self, question, agentType):
+        data = []
+        ##Setup color position data
+        for color in INTEG_COLOR:
+            color_pos = self.getColorPosition(color)
+            for idx in range(MAP_SIZE):
+                if idx == color_pos:
+                    data.append(1)
+                else:
+                    data.append(0)
+        ##Setup innocents color
+        for color in INTEG_COLOR:
+            if self.isInnocent(color):
+                data.append(1)
+            else:
+                data.append(0)
+        ##Setup lock and light position data
+        data.append(self.blacktoken_pos)
+        sortedLock = sorted(self.locked_path)
+        data.append(sortedLock[0])
+        data.append(sortedLock[1])
+        ##Setup score
+        data.append(self.score)
+        ##Setup fantom color (if known)
+        if (agentType == PLAYER_TYPE.GHOST):
+            data.append(self.ghost_color)
+        ##Setup tour infos
+        data.append(self.first_in_tour)
+        # if (question == QUESTION_TYPE.TUILES):
+        #     data.append(self.selected_colors)
+        if (question == QUESTION_TYPE.POWER or question == QUESTION_TYPE.MOVE):
+            data.append(COLOR_INTEG[self.current_color])
+        return data
 
 if __name__ == "__main__":
     #Test the World class

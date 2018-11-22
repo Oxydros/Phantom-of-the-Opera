@@ -24,7 +24,7 @@ def updateInfos(world, infoData):
         logging.info("Got info tour %s"%(infoData))
         world.updateTuiles(infoData['Data'])
 
-def loop(world, parser, d):
+def loop(world, parser, d, agentType):
     while (True):
         logging.info("Waiting msg...")
         msg = parser.readMsg()
@@ -41,7 +41,6 @@ def loop(world, parser, d):
             questionData = parser.parseQuestion(msg.content)
             world.updateState(questionData)
             answer = ""
-            print(questionData["QuestionType"], " ", QUESTION_TYPE.TUILES)
             if questionData["QuestionType"] == QUESTION_TYPE.MOVE:
                 logging.info("Got question %s"%(questionData))
                 answer = d.nextPos(questionData["Data"])
@@ -51,7 +50,8 @@ def loop(world, parser, d):
             elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
                 print("OUI")
                 logging.info("Got question %s"%(questionData))
-                answer = d.selectTuile(questionData["Data"])
+                answer, actual_color = d.selectTuile(questionData["Data"])
+                world.setCurrentPlayedColor(actual_color)
             parser.sendMsg(answer) 
     return "Unknown"   
 
@@ -64,7 +64,7 @@ def lancer(agentType):
     while True:
         world = World()
         d = GameAgent(world, agentType)
-        result = loop(world, parser, d)        
+        result = loop(world, parser, d, agentType)        
         logging.info("Got result from game %s"%(result))
         if result == "EndGame":
             break
