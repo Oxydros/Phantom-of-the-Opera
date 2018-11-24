@@ -18,20 +18,20 @@ When we talk about all of this questions, we will use the E* notation.
 ### Data
 
 We can find different type of informations, defining the state:
-* Position of the colors (room they are in) -> **D0**
-* Position of the lock -> **D1**
-* Position of the light -> **D2**
-* Score of the game -> **D3**
-* Color of the fantom -> **D4**
-* Was the agent the first one of the "tour" -> **D5**
-* 4 selected colors to play -> **D6**
-* Color choosed to be played -> **D7**
+* Position of the colors (room they are in) -> **D0** *88 data points*
+* Position of the lock -> **D1** *2 data points*
+* Position of the light -> **D2** *1 data point*
+* Score of the game -> **D3** *1 data point*
+* Color of the fantom -> **D4** *1 data point*
+* Was the agent the first one of the "tour" -> **D5** *1 data point*
+* 4 selected colors to play -> **D6** *4 data points*
+* Color choosed to be played -> **D7** *1 data point*
 
 |    | D0 | D1 | D2 | D3 | D4 | D5 | D6 | D7 | Size |
 |----|----|----|----|----|----|----|----|----|------|
-| E0 | X  | X  | X  | X  | X  | X  | X  |    | 107  |
-| E1 | X  | X  | X  | X  | X  | X  |    | X  | 105  |
-| E2 | X  | X  | X  | X  | X  | X  |    | X  | 105  |
+| E0 | X  | X  | X  | X  | X  | X  |    |    | 106  |
+| E1 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
+| E2 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
 
 ## Realisation
 

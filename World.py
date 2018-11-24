@@ -246,7 +246,7 @@ class World:
 
     def getQLearningData(self, question, agentType):
         data = []
-        ##Setup color position data
+        ##Setup color position data 8 x 10 => 80
         for color in INTEG_COLOR:
             color_pos = self.getColorPosition(color)
             for idx in range(MAP_SIZE):
@@ -254,18 +254,18 @@ class World:
                     data.append(1)
                 else:
                     data.append(0)
-        ##Setup innocents color
+        ##Setup innocents color 8
         for color in INTEG_COLOR:
             if self.isInnocent(color):
                 data.append(1)
             else:
                 data.append(0)
-        ##Setup lock and light position data
+        ##Setup lock and light position data => 3
         data.append(self.blacktoken_pos)
         sortedLock = sorted(self.locked_path)
         data.append(sortedLock[0])
         data.append(sortedLock[1])
-        ##Setup score
+        ##Setup score => 1
         data.append(self.score)
         ##Setup fantom color (if known)
         if (agentType == PLAYER_TYPE.GHOST):
