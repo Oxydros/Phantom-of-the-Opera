@@ -4,14 +4,23 @@ from DQNLearning import DQNAgent
 from AgentTypes import QUESTION_TYPE, PLAYER_TYPE
 from World import COLOR_INTEG, INTEG_COLOR
 
-TUILE_IDATA_POINTS = 93
-TUILE_ODATA_POINTS = 8
+def extractColorSelection(tensor):
+    return tensor[:8]
+    
+def extractPositionSelection(tensor):
+    return tensor[9:18]
+    
+def extractPowerSelection(tensor):
+    return tensor[19:]
 
-POWER_IDATA_POINTS = 107
-POWER_ODATA_POINTS = 2
-
-MOV_IDATA_POINTS = 107
-MOV_ODATA_POINTS = 10
+def extractGameState(qType):
+    if qType == QUESTION_TYPE.TUILES:
+        return 0
+    elif qType == QUESTION_TYPE.POWER:
+        return 1
+    elif qType == QUESTION_TYPE.MOVE:
+        return 2
+    return 3
 
 class GameAgent():
     agentType = None
@@ -19,11 +28,9 @@ class GameAgent():
     def __init__(self, agentType):
         self.agentType = agentType
         if self.agentType == PLAYER_TYPE.GHOST:
-            self.tuileAgent = DQNAgent(TUILE_IDATA_POINTS + 1,
-            TUILE_ODATA_POINTS)
+            self.agent = DQNAgent(23, 20)
         else:
-            self.tuileAgent = DQNAgent(TUILE_IDATA_POINTS,
-            TUILE_ODATA_POINTS)
+            self.agent = DQNAgent(22, 20)
 
     def getAgentType(self):
         return self.agentType
@@ -34,9 +41,9 @@ class GameAgent():
 
         possible_tuiles = [COLOR_INTEG[d['color']] for d in tuiles ]
 
-        idata = world.getQLearningData(QUESTION_TYPE.TUILES,
-                                        self.agentType)
-        data = self.tuileAgent.process(idata)
+        gameState = extractGameState(QUESTION_TYPE.TUILES)
+        idata = world.getQLearningData(self.agentType, gameState)
+        data = self.agent.process(idata)
 
         logging.info("[IA] Got result from DQN: %s"%(data))
         ##Feed action taken
@@ -44,20 +51,22 @@ class GameAgent():
         best_value = float("-inf")
         best_id_rep = float("-inf")
         best_id_color = float("-inf")
-        data_to_process = data[0]
+        data_to_process = extractColorSelection(data[0])
         for idx, d in enumerate(possible_tuiles):
             if data_to_process[d] >= best_value:
                 best_value = data_to_process[d]
                 best_id_rep = idx
                 best_id_color = d
-        # print(tuiles)
-        # print(possible_tuiles)
-        # print("Data is %s and best id is %d which is colore %s"%(data, best_id_color, INTEG_COLOR[best_id_color]))
-        # print(best_id_rep)
-        self.tuileAgent.action_taken(idata, best_id_color)
+        self.agent.action_taken(idata, best_id_color)
 
-        # State doesn't change for Tuile selection
-        self.tuileAgent.next_state(idata)
+        print(tuiles[best_id_rep]['color'])
+        print(type(tuiles[best_id_rep]['color']))
+
+        #Setting up current color in world state
+        world.setCurrentPlayedColor(tuiles[best_id_rep]['color'])
+
+        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
+
         return (str(best_id_rep), tuiles[best_id_rep]['color'])
 
     ## Return the best next pos
@@ -70,14 +79,42 @@ class GameAgent():
         logging.info("[IA] Use power %d"%(0))
         return str(0)
 
-    ## Reward the agents
-    def rewardAgent(self, reward, end_game):
-        self.tuileAgent.reward(reward, end_game)
+    def _processRewardGhost(self, world):
+        ## Compute ratio score
+        score_diff = world.getScore() - world.getOldScore()
 
-    ## Notify the agents of a new state
-    def nextState(self, world, lastQuestionType):
-        pass
-        # logging.info("[IA] Next state called with last type %s"%(lastQuestionType))
-        # if lastQuestionType == QUESTION_TYPE.TUILES:
-        #     self.tuileAgent.next_state(world.getQLearningData(lastQuestionType,
-        #     self.agentType))
+        #If gain more than 6 then its reward of 1, else its near 0
+        score_evol = score_diff / 6
+        reward = score_evol
+
+        ## Check if game ended
+        game_ended = world.getScore() >= 22
+
+        logging.info("[IA] Agent GHOST got %d reward"%(reward))
+        self.agent.reward(reward, game_ended)
+
+    def _processRewardDetective(self, world):
+        ## Compute ratio score
+        score_diff = world.getScore() - world.getOldScore()
+
+        if score_diff == 0:
+            score_diff = 1
+
+        #If gain more than 6 then its reward of 1, else its near 0
+        score_evol = 1 / score_diff
+    
+        #If score_evol is negative its really good, so we maximize reward
+        reward = 1 if score_evol <= 0 else score_evol
+
+        ## Check if game ended
+        game_ended = world.getScore() >= 22
+
+        logging.info("[IA] Agent DETECTIVE got %d reward"%(reward))
+        self.agent.reward(reward, game_ended)
+
+    ## Reward the agents
+    ## Calculate a reward based on score, innocents people, etc
+    def endOfHalfTour(self, world):
+        if self.agentType == PLAYER_TYPE.GHOST:
+            return self._processRewardGhost(world)
+        return self._processRewardDetective(world)

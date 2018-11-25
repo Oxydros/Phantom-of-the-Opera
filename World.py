@@ -63,13 +63,14 @@ class World:
     ## Current non innocent
     non_innocent_colors = TOTAL_COLORS.copy()
     innocent_colors = set()
-    score = 0
+    score = 4
+    oldScore = 4
     tour = 0
     status = {}
     ghost_color = 0
     first_in_tour = 0
     selected_colors = []
-    current_color = 0
+    current_color = "rose"
 
     def __init__(self, *args, **kwargs):
         pass
@@ -183,7 +184,11 @@ class World:
     
     ## Set the score of the current game
     def setScore(self, newScore):
+        self.oldScore = self.score
         self.score = newScore
+
+    def getOldScore(self):
+        return self.oldScore
 
     ## Get the score of the current game
     def getScore(self):
@@ -242,18 +247,16 @@ class World:
         self.selected_colors = colors
 
     def setCurrentPlayedColor(self, color):
+        if not isinstance(color, str):
+            raise ValueError("Bad args for color, expected string")
         self.current_color = color
 
-    def getQLearningData(self, question, agentType):
+    def getQLearningData(self, agentType, gameState):
         data = []
-        ##Setup color position data 8 x 10 => 80
+        ##Setup color position data 8
         for color in INTEG_COLOR:
             color_pos = self.getColorPosition(color)
-            for idx in range(MAP_SIZE):
-                if idx == color_pos:
-                    data.append(1)
-                else:
-                    data.append(0)
+            data.append(color_pos)
         ##Setup innocents color 8
         for color in INTEG_COLOR:
             if self.isInnocent(color):
@@ -261,21 +264,16 @@ class World:
             else:
                 data.append(0)
         ##Setup lock and light position data => 3
-        data.append(self.blacktoken_pos)
         sortedLock = sorted(self.locked_path)
         data.append(sortedLock[0])
         data.append(sortedLock[1])
+        data.append(self.blacktoken_pos)
         ##Setup score => 1
         data.append(self.score)
-        ##Setup fantom color (if known)
+        data.append(COLOR_INTEG[self.current_color])
+        data.append(gameState)
         if (agentType == PLAYER_TYPE.GHOST):
-            data.append(self.ghost_color)
-        ##Setup tour infos
-        data.append(self.first_in_tour)
-        # if (question == QUESTION_TYPE.TUILES):
-        #     data.append(self.selected_colors)
-        if (question == QUESTION_TYPE.POWER or question == QUESTION_TYPE.MOVE):
-            data.append(COLOR_INTEG[self.current_color])
+            data.append(self.ghost_color)            
         return data
 
 if __name__ == "__main__":

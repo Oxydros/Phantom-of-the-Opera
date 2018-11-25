@@ -20,11 +20,13 @@ def updateInfos(world, d, infoData, lastQuestionType):
     if infoData['InfoStatus'] == INFO_STATUS.OK:
         logging.info("Got info tour %s"%(infoData))
         world.setStatus(infoData)
-        d.nextState(world, lastQuestionType)
+        ##Check if a new tour is starting
+        ##Notify agent to calcuate reward of previous tour
+        if infoData.get('Tour', None) != None:
+            d.endOfHalfTour(world)
     elif infoData['InfoStatus'] == INFO_STATUS.PLACEMENT:
         logging.info("Got info tour %s"%(infoData))
         world.updateTuiles(infoData['Data'])
-        d.nextState(world, lastQuestionType)
 
 def loop(world, parser, d, agentType):
     lastQuestionType = None
@@ -41,16 +43,6 @@ def loop(world, parser, d, agentType):
             if infoData['InfoStatus'] == INFO_STATUS.END:
                 break
             updateInfos(world, d, infoData, lastQuestionType)
-
-            ##Update reward: check if score changed
-            new_score = world.getScore()
-            if prevScore == None:
-                prevScore = new_score
-            elif new_score != prevScore:
-                if agentType == PLAYER_TYPE.GHOST:
-                    d.rewardAgent(1 if new_score > prevScore else -1, 0)
-                else:
-                    d.rewardAgent(1 if new_score <= prevScore else -1, 0)
         elif msgType == "Question":
             questionData = parser.parseQuestion(msg.content)
             world.updateState(questionData)
