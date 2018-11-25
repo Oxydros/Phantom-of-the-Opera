@@ -67,9 +67,7 @@ class World:
     oldScore = 4
     tour = 0
     status = {}
-    ghost_color = 0
-    first_in_tour = 0
-    selected_colors = []
+    ghost_color = ""
     current_color = "rose"
 
     def __init__(self, *args, **kwargs):
@@ -84,7 +82,7 @@ class World:
             raise ValueError("Color %s doesn't exist!"%(color))
 
     def setGhostColor(self, color):
-        ghost_color = color
+        self.ghost_color = color
 
     ## Set the position of the given Color
     def setColorPosition(self, color, pos):
@@ -240,16 +238,13 @@ class World:
             if state == 'clean':
                 self.setInnocentColor(color)
 
-    def setFirstInTour(self, agentId):
-        self.first_in_tour = agentId
-
-    def setSelectedColor(self, colors):
-        self.selected_colors = colors
-
     def setCurrentPlayedColor(self, color):
         if not isinstance(color, str):
             raise ValueError("Bad args for color, expected string")
         self.current_color = color
+
+    def getCurrentPlayedColor(self):
+        return self.current_color
 
     def getQLearningData(self, agentType, gameState):
         data = []
@@ -273,7 +268,7 @@ class World:
         data.append(COLOR_INTEG[self.current_color])
         data.append(gameState)
         if (agentType == PLAYER_TYPE.GHOST):
-            data.append(self.ghost_color)            
+            data.append(COLOR_INTEG[self.ghost_color])
         return data
 
 if __name__ == "__main__":

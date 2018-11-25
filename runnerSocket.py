@@ -1,6 +1,6 @@
 import logging
 import sys
-from GameAgent import GameAgent
+from GameAgent import SmartGameAgent, GameAgent
 from AgentTypes import PLAYER_TYPE, QUESTION_TYPE, INFO_STATUS
 from ParsingSocket import Parser
 from World import World
@@ -11,38 +11,41 @@ root = logging.getLogger()
 root.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 root.addHandler(ch)
 
-def updateInfos(world, d, infoData, lastQuestionType):
+def updateInfos(agentType, world, d, infoData, lastQuestionType):
     if infoData['InfoStatus'] == INFO_STATUS.OK:
-        logging.info("Got info tour %s"%(infoData))
+        logging.info("Got info TOUR %s"%(infoData))
         world.setStatus(infoData)
         ##Check if a new tour is starting
         ##Notify agent to calcuate reward of previous tour
         if infoData.get('Tour', None) != None:
             d.endOfHalfTour(world)
     elif infoData['InfoStatus'] == INFO_STATUS.PLACEMENT:
-        logging.info("Got info tour %s"%(infoData))
+        logging.info("Got info PLACEMENT %s"%(infoData))
         world.updateTuiles(infoData['Data'])
+    elif infoData['InfoStatus'] == INFO_STATUS.GHOST:
+        if agentType == PLAYER_TYPE.DETECTIVE:
+            raise RuntimeError("Received ghost but I am detective !")
+        logging.info("Got info GHOST %s"%(infoData))
+        world.setGhostColor(infoData['Data'])
 
 def loop(world, parser, d, agentType):
     lastQuestionType = None
     prevScore = None
     while (True):
-        logging.info("Waiting msg...")
         msg = parser.readMsg()
         msgType = msg.type
-        logging.info("Got msg of type %s"%(msgType))
         if msgType == "Information":
             if msg.content == "ResetGame" or msg.content == "EndGame":
                 return msg.content
             infoData = parser.parseInfo(msg.content)
             if infoData['InfoStatus'] == INFO_STATUS.END:
                 break
-            updateInfos(world, d, infoData, lastQuestionType)
+            updateInfos(agentType, world, d, infoData, lastQuestionType)
         elif msgType == "Question":
             questionData = parser.parseQuestion(msg.content)
             world.updateState(questionData)
@@ -55,19 +58,23 @@ def loop(world, parser, d, agentType):
                 answer = d.powerChoice(world)
             elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
                 logging.info("Got question %s"%(questionData))
-                answer, actual_color = d.selectTuile(world, questionData["Data"])
-                world.setCurrentPlayedColor(actual_color)
-            parser.sendMsg(answer) 
+                answer = d.selectTuile(world, questionData["Data"])
+            logging.info("Sending answer %s"%(answer))
+            parser.sendMsg(answer)
             lastQuestionType = questionData["QuestionType"]
     return "Unknown"   
 
-def lancer(agentType):
+def lancer(agentType, smart=True):
     logging.info("Launching %s IA"%(agentType))
     parser = Parser(agentType)
     logging.info("Init network...")
     parser.initNetwork()
     logging.info("Done!")
-    d = GameAgent(agentType)
+    d = None
+    if smart:
+        d = SmartGameAgent(agentType)
+    else:
+        d = GameAgent()
     while True:
         world = World()
         result = loop(world, parser, d, agentType)        

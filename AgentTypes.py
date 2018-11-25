@@ -15,3 +15,4 @@ class INFO_STATUS(Enum):
       OK = 1
       PLACEMENT = 2
       END = 3
+      GHOST = 4

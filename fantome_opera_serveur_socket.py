@@ -128,6 +128,9 @@ class joueur:
                 q.position = x
                 informer("NOUVEAU PLACEMENT : "+str(q))
 
+WIN_D = 0
+WIN_G = 0
+
 class partie:
     def __init__(self,joueurs):
         for i in [0,1]:
@@ -186,9 +189,14 @@ class partie:
             p.pouvoir = True
         self.num_tour += 1
     def lancer(self):
+        global WIN_D, WIN_G
         while self.start < self.end and len([p for p in self.personnages if p.suspect]) > 1:
             self.tour()
         informer("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
+        if self.start < self.end:
+            WIN_D += 1
+        else:
+            WIN_G += 1
         print("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
         informer("Score final : "+str(self.end-self.start))
         print("Score final : "+str(self.end-self.start))
@@ -210,7 +218,7 @@ def init_connexion():
 
 init_connexion()
 
-for i in range(50):
+for i in range(1000):
     scores.append(partie(joueurs).lancer())
     print("partie : " + str(i))
     informer("ResetGame")
@@ -219,4 +227,6 @@ informer("EndGame")
 
 w0 = [win for win in scores if win <= 0]
 
+print("Detective won %d times"%(WIN_D))
+print("Ghost won %d times"%(WIN_G))
 print ("winrate : " + str(len(w0) / len(scores) * 100))

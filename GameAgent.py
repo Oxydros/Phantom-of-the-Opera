@@ -8,10 +8,26 @@ def extractColorSelection(tensor):
     return tensor[:8]
     
 def extractPositionSelection(tensor):
-    return tensor[9:18]
+    return tensor[8:19]
     
 def extractPowerSelection(tensor):
     return tensor[19:]
+
+class GameAgent():
+    def selectTuile(self, world, tuiles):
+        logging.info("Selecting Random Tuile 0")
+        return str(0)
+
+    def nextPos(self, world, available_pos):
+        logging.info("Selecting Random Pos 0")
+        return str(0)
+
+    def powerChoice(self, world):
+        logging.info("Selecting Random Power 0")
+        return str(0)
+
+    def endOfHalfTour(self, world):
+        pass
 
 def extractGameState(qType):
     if qType == QUESTION_TYPE.TUILES:
@@ -22,7 +38,7 @@ def extractGameState(qType):
         return 2
     return 3
 
-class GameAgent():
+class SmartGameAgent(GameAgent):
     agentType = None
 
     def __init__(self, agentType):
@@ -37,7 +53,7 @@ class GameAgent():
 
     ## Return the best tuile selection
     def selectTuile(self, world, tuiles):
-        logging.info("[IA] Trying to find best tuile")
+        logging.debug("[IA] Trying to find best tuile")
 
         possible_tuiles = [COLOR_INTEG[d['color']] for d in tuiles ]
 
@@ -45,7 +61,7 @@ class GameAgent():
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
 
-        logging.info("[IA] Got result from DQN: %s"%(data))
+        logging.debug("[IA] Got result from DQN: %s"%(data))
         ##Feed action taken
         ##Take best color from possible tuiles
         best_value = float("-inf")
@@ -59,24 +75,52 @@ class GameAgent():
                 best_id_color = d
         self.agent.action_taken(idata, best_id_color)
 
-        print(tuiles[best_id_rep]['color'])
-        print(type(tuiles[best_id_rep]['color']))
-
         #Setting up current color in world state
         world.setCurrentPlayedColor(tuiles[best_id_rep]['color'])
 
         self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
-        return (str(best_id_rep), tuiles[best_id_rep]['color'])
+        logging.info("Selecting tuile %s"%(tuiles[best_id_rep]['color']))
+        return str(best_id_rep)
 
     ## Return the best next pos
     def nextPos(self, world, available_pos):
-        logging.info("[IA] selected POSITION %s"%(0))
-        return str(0)
+        logging.debug("[IA] Trying to find best new Position")
+
+        possible_positions = [int(p) for p in available_pos]
+
+        gameState = extractGameState(QUESTION_TYPE.MOVE)
+        idata = world.getQLearningData(self.agentType, gameState)
+        data = self.agent.process(idata)
+        logging.debug("[IA] Got result from DQN: %s"%(data))
+
+        ##Feed action taken
+        ##Take best position from possible pos
+        best_value = float("-inf")
+        best_id_rep = float("-inf")
+        best_id_room = float("-inf")
+        data_to_process = extractPositionSelection(data[0])
+        for idx, d in enumerate(possible_positions):
+            if data_to_process[d] >= best_value:
+                best_value = data_to_process[d]
+                best_id_rep = idx
+                best_id_room = d
+
+        ##Add 8 because of position in actions
+        assert(data[0][best_id_room + 8].item() == best_value.item())
+        self.agent.action_taken(idata, best_id_room + 8)
+
+        #Set new position
+        world.setColorPosition(world.getCurrentPlayedColor(), best_id_room)
+
+        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
+
+        logging.info("Selecting position %s"%(best_id_room))
+        return (str(best_id_rep))
 
     ## Return the best power choice
     def powerChoice(self, world):
-        logging.info("[IA] Use power %d"%(0))
+        logging.debug("[IA] Use power %d"%(0))
         return str(0)
 
     def _processRewardGhost(self, world):
@@ -90,7 +134,7 @@ class GameAgent():
         ## Check if game ended
         game_ended = world.getScore() >= 22
 
-        logging.info("[IA] Agent GHOST got %d reward"%(reward))
+        logging.debug("[IA] Agent GHOST got %f reward"%(reward))
         self.agent.reward(reward, game_ended)
 
     def _processRewardDetective(self, world):
@@ -109,7 +153,7 @@ class GameAgent():
         ## Check if game ended
         game_ended = world.getScore() >= 22
 
-        logging.info("[IA] Agent DETECTIVE got %d reward"%(reward))
+        logging.debug("[IA] Agent DETECTIVE got %d reward"%(reward))
         self.agent.reward(reward, game_ended)
 
     ## Reward the agents

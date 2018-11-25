@@ -49,11 +49,17 @@ class Parser :
                   }
                   return infoTour
             else:
-                  print("GOT UNKNWOWN DATA %s"%(data))
-                  return {
-                        "InfoStatus" : INFO_STATUS.ERROR,
-                        "Data" : 'Nothing Change'
-                  }
+                  ghost = re.findall(r'!!! Le fantôme est : (.*)', data)
+                  if len(ghost) > 0:
+                        return {
+                              "InfoStatus" : INFO_STATUS.GHOST,
+                              "Data" : ghost[0]
+                        }
+                  else:
+                        return {
+                              "InfoStatus" : INFO_STATUS.ERROR,
+                              "Data" : 'Nothing Change'
+                        }
 
       def parseQuestion(self, question):
             parser = Parsing.Parser(None)
