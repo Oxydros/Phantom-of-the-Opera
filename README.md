@@ -53,6 +53,9 @@ We can find different type of informations, defining the state:
 * Size of entry 105  
 * Size of exit 9 (9 rooms)
 
+## V2 data
+
+
 
 ## Links
 

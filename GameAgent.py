@@ -41,12 +41,12 @@ class GameAgent():
         logging.info("[IA] Got result from DQN: %s"%(data))
         ##Feed action taken
         ##Take best color from possible tuiles
-        best_value = -1
-        best_id_rep = -1
-        best_id_color = -1
+        best_value = float("-inf")
+        best_id_rep = float("-inf")
+        best_id_color = float("-inf")
         data_to_process = data[0]
         for idx, d in enumerate(possible_tuiles):
-            if data_to_process[d] > best_value:
+            if data_to_process[d] >= best_value:
                 best_value = data_to_process[d]
                 best_id_rep = idx
                 best_id_color = d
@@ -54,7 +54,7 @@ class GameAgent():
         # print(possible_tuiles)
         # print("Data is %s and best id is %d which is colore %s"%(data, best_id_color, INTEG_COLOR[best_id_color]))
         # print(best_id_rep)
-        self.tuileAgent.action_taken(idata, data[0, best_id_color])
+        self.tuileAgent.action_taken(idata, best_id_color)
 
         # State doesn't change for Tuile selection
         self.tuileAgent.next_state(idata)
