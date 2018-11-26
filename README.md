@@ -61,8 +61,8 @@ utiles que d'autre.
   
 Differents choix possibles au cours du jeu (actions):
 * Choix d'une couleur (8 couleurs => 8 actions)
-* Nouvelle position de la couleur actuelle (10 salles => 10 actions)
-* Choix d'utiliser le pouvoir de la couleur actuelle (Oui ou Non => 2 actions)
+* Choix d'une position (10 salles => 10 actions)
+* Choix d'utiliser un pouvoir (Oui ou Non => 2 actions)
 
 Le nombre d'actions est donc de **20**
 
@@ -72,6 +72,10 @@ On peut identifier différentes étapes uniques au cours du jeu, qui se relaient
 * Sélection d'une carte
 * Pouvoir Oui/Non
 * Déplacement
+* Sélection carte pouvoir violet
+* Sélection position pouvoir blanc
+* Sélection position pouvoir gris
+* Sélection position pouvoir bleu
   
 Basé sur ces observations, on peut déterminer les informations requises dans le state du jeu:
 * Position des couleurs => 8 integer ayant une valeur de 0 à 9, représentant la salle dans laquelle ils sont
@@ -80,7 +84,7 @@ Basé sur ces observations, on peut déterminer les informations requises dans l
 * Position de la salle noir => 1 integer ayant une valeur de 0 à 9, indiquant quelle salle est sombre
 * Le score du jeu => 1 entier ayant une valeur > 0
 * La couleur selectionnée => 1 entier ayant une valeur comprise entre 0 et 8, représentant la couleur actuelle à jouer
-* L'état du jeu => 1 entier ayant une valeur >= 0 et <= 2 représentant les différents états cités plus haut
+* L'état du jeu => 1 entier ayant une valeur >= 0 et <= 6 représentant les différents états cités plus haut
   
 Seulement pour le fantome: 
 * Le numéros de la couleur fantome

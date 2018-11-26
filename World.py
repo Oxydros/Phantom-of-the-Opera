@@ -164,6 +164,9 @@ class World:
         if (type(path) is not set or len(path) != 2):
             raise ValueError("Given blocked path is not valid")
         self.locked_path = list(path)
+    
+    def setBlockedPathByIdx(self, roomId, idx):
+        self.locked_path[idx] = roomId
 
     ## Get the blocked path
     def getBlockedPath(self):

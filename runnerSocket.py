@@ -33,6 +33,33 @@ def updateInfos(agentType, world, d, infoData, lastQuestionType):
         logging.info("Got info GHOST %s"%(infoData))
         world.setGhostColor(infoData['Data'])
 
+def processQuestions(parser, world, msg, d):
+    questionData = parser.parseQuestion(msg.content)
+    logging.info("Got question %s"%(questionData))
+
+    world.updateState(questionData)
+    answer = ""
+
+    if questionData["QuestionType"] == QUESTION_TYPE.MOVE:
+        answer = d.nextPos(world, questionData["Data"],
+                            questionData["Color"])
+    elif questionData["QuestionType"] == QUESTION_TYPE.POWER:
+        answer = d.powerChoice(world)
+    elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
+        answer = d.selectTuile(world, questionData["Data"])
+    elif questionData["QuestionType"] == QUESTION_TYPE.P_VIOLET:
+        answer = d.selectTuile(world, None, True)
+    elif questionData["QuestionType"] == QUESTION_TYPE.P_GRIS:
+        answer = d.selectPowerGris(world)
+    elif questionData["QuestionType"] == QUESTION_TYPE.P_BLEU:
+        answer = d.selectPowerBlue(world, questionData["Data"])
+    elif questionData["QuestionType"] == QUESTION_TYPE.ERROR:
+        raise ValueError("Unknown question " + msg.content)
+
+    logging.info("Sending answer %s"%(answer))
+    parser.sendMsg(answer)
+    lastQuestionType = questionData["QuestionType"]    
+
 def loop(world, parser, d, agentType):
     lastQuestionType = None
     prevScore = None
@@ -47,21 +74,7 @@ def loop(world, parser, d, agentType):
                 break
             updateInfos(agentType, world, d, infoData, lastQuestionType)
         elif msgType == "Question":
-            questionData = parser.parseQuestion(msg.content)
-            world.updateState(questionData)
-            answer = ""
-            if questionData["QuestionType"] == QUESTION_TYPE.MOVE:
-                logging.info("Got question %s"%(questionData))
-                answer = d.nextPos(world, questionData["Data"])
-            elif questionData["QuestionType"] == QUESTION_TYPE.POWER:
-                logging.info("Got question %s"%(questionData))
-                answer = d.powerChoice(world)
-            elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
-                logging.info("Got question %s"%(questionData))
-                answer = d.selectTuile(world, questionData["Data"])
-            logging.info("Sending answer %s"%(answer))
-            parser.sendMsg(answer)
-            lastQuestionType = questionData["QuestionType"]
+            processQuestions(parser, world, msg, d)
     return "Unknown"   
 
 def lancer(agentType, smart=True):

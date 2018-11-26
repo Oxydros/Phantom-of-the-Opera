@@ -63,12 +63,4 @@ class Parser :
 
       def parseQuestion(self, question):
             parser = Parsing.Parser(None)
-            if (question.find('Tuiles') != -1) :
-                  return parser.parseTuiles(question)
-            elif (question.find('pouvoir') != -1) :
-                return parser.parsePower(question)
-            elif (question.find('positions') != -1) :
-                  return parser.parsePosition(question)
-            else :
-                  return { "QuestionType" : QUESTION_TYPE.ERROR,
-                        "Data" : "Unknow Question"}
+            return parser.findQuestion(question)

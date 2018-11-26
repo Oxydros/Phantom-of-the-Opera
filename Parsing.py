@@ -130,9 +130,20 @@ class Parser :
       if (regex) :
         positionsAvailable = regex.group(1).replace(' ', '')
         listPositionsAvailable = positionsAvailable.split(',')
+        find_color = re.search(r"(.*), positions", question)
+        color = None
+        if find_color:
+              color = find_color.group(0).split(',')[0]
+              tuileInfo = color.split('-');
+              color = {
+                'color': tuileInfo[0],
+                'pos': int(tuileInfo[1]),
+                'state' : tuileInfo[2]
+              }
         questionParsed = {
           "QuestionType" : QUESTION_TYPE.MOVE,
           "Data" : listPositionsAvailable,
+          "Color" : color
         }
         return questionParsed
       return {
@@ -149,6 +160,22 @@ class Parser :
       }
       return questionParsed
 
+    def parseBluePosition(self, question):
+          regex = re.search(r'{(.*)}', question)
+          if (regex) :
+                positionsAvailable = regex.group(1).replace(' ', '')
+                listPositionsAvailable = positionsAvailable.split(',')
+                questionParsed = {
+                  "QuestionType" : QUESTION_TYPE.P_BLEU,
+                  "Data" : listPositionsAvailable,
+                }
+                return questionParsed
+          return {
+              "QuestionType": QUESTION_TYPE.ERROR,
+              "Data" : regex
+            }
+
+
 ## call the parsing function who match the question
 ## if forest tmp, just to test
     def findQuestion(self, question) :
@@ -158,6 +185,23 @@ class Parser :
         return self.parsePower(question)
       elif (question.find('positions') != -1) :
         return self.parsePosition(question)
+      elif (question.find("Avec quelle couleur échanger (pas violet!) ?") != -1):
+        return {
+          "QuestionType" : QUESTION_TYPE.P_VIOLET,
+          "Data" : None
+        }
+      elif (question.find("Quelle salle obscurcir ?") != -1):
+        return {
+                  "QuestionType" : QUESTION_TYPE.P_GRIS,
+                  "Data" : None
+              }
+      elif (question.find("Quelle salle bloquer ?") != -1):
+        return {
+          "QuestionType" : QUESTION_TYPE.P_BLEU,
+          "Data": None
+        }
+      elif (question.find("Quelle sortie ?") != -1):
+        return self.parseBluePosition(question)
       else :
         return { "QuestionType" : QUESTION_TYPE.ERROR,
                 "Data" : "Unknow Question"}
