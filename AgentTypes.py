@@ -20,3 +20,4 @@ class INFO_STATUS(IntEnum):
       PLACEMENT = 2
       END = 3
       GHOST = 4
+      SUSPECT = 5

@@ -48,18 +48,28 @@ class Parser :
                         "Tuiles" : listTuiles,
                   }
                   return infoTour
-            else:
-                  ghost = re.findall(r'!!! Le fantôme est : (.*)', data)
-                  if len(ghost) > 0:
-                        return {
-                              "InfoStatus" : INFO_STATUS.GHOST,
-                              "Data" : ghost[0]
-                        }
-                  else:
-                        return {
-                              "InfoStatus" : INFO_STATUS.ERROR,
-                              "Data" : 'Nothing Change'
-                        }
+            ghost = re.findall(r'!!! Le fantôme est : (.*)', data)
+            if len(ghost) > 0:
+                  return {
+                        "InfoStatus" : INFO_STATUS.GHOST,
+                        "Data" : ghost[0]
+                  }
+            infosSuspect = re.findall(r'noir-7-suspect a été tiré', data)
+            if len(infosSuspect) > 0:
+                  tuileInfo = infosSuspect[0]
+                  tuile = {
+                        'color': tuileInfo[0],
+                        'pos': int(tuileInfo[1]),
+                        'state' : tuileInfo[2]
+                  }
+                  return {
+                        "InfosStatus" : INFO_STATUS.SUSPECT,
+                        "Data": tuile
+                  }
+            return {
+                  "InfoStatus" : INFO_STATUS.ERROR,
+                  "Data" : 'Nothing Change'
+            }
 
       def parseQuestion(self, question):
             parser = Parsing.Parser(None)

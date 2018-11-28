@@ -140,12 +140,16 @@ class Parser :
                 'pos': int(tuileInfo[1]),
                 'state' : tuileInfo[2]
               }
-        questionParsed = {
+              return {
+                "QuestionType" : QUESTION_TYPE.P_BLANC,
+                "Data" : listPositionsAvailable,
+                "Color" : color
+              }
+        return {
           "QuestionType" : QUESTION_TYPE.MOVE,
           "Data" : listPositionsAvailable,
           "Color" : color
         }
-        return questionParsed
       return {
         "QuestionType": QUESTION_TYPE.ERROR,
         "Data" : regex

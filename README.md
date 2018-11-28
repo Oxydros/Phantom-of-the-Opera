@@ -93,6 +93,17 @@ La taille de la data est donc de:
 * **22** pour le detective
 * **23** pour le ghost
 
+Gestion des states:
+* Chaque question enchaine une action. Nous représentons ici une question par *q*
+* Pour chaque action, on enregistre l'état *S(q)*, l'action, le reward et l'état *S+1(q)*
+* L'état **S(q)** est l'état au moment de la question, il est donc trivial à obtenir
+* L'état **S+1(q)** est l'état du jeu suite à l'interprétation de notre réponse par le serveur.
+
+Nous pouvons remarquer 3 différentes façon d'obtenir cet état **S+1(q)**:
+* Lors d'une nouvelle question qui suit la précédente. On a donc **S+1(q) = S(q + 1)**
+* Lors d'un changement de main. Si le tour passe du fantome au detective ou vice versa, on sait que l'état actuel du jeu fait suite à la derniere action du fantome ou du detective.
+* Lors du début d'un nouveau tour.
+
 ## Links
 
 https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html

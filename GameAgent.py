@@ -14,20 +14,28 @@ def extractPowerSelection(tensor):
     return tensor[18:]
 
 class GameAgent():
-    def selectTuile(self, world, tuiles, violet_power = False):
-        logging.info("Selecting Random Tuile 0")
-        return str(0)
-
-    def nextPos(self, world, available_pos, color):
+    def nextCurrentColorPos(self, world, available_pos):
         logging.info("Selecting Random Pos 0")
         return str(0)
 
-    def selectPowerGris(self, world):
-        logging.info("Selecting Random GRIS power")
+    def nextPosColorWhitePower(self, world, target_color, available_pos):
+        logging.info("Selecting Random WHITE POWER")
         return str(0)
 
-    def selectPowerBlue(self, world, available_pos):
-        logging.info("Selecting Random GRIS power")
+    def nextBlockedPathBluePower(self, world, available_pos):
+        logging.info("Selecting Random BLUE POWER")
+        return str(0)
+
+    def nextPosBlackRoom(self, world):
+        logging.info("Selecting Random GRIS POWER")
+        return str(0)
+
+    def selectTuile(self, world, tuiles):
+        logging.info("Selecting Random Tuile 0")
+        return str(0)
+
+    def selectTuileVioletPower(self, world, tuiles):        
+        logging.info("Selecting Random Tuile 0 for VIOLET POWER")
         return str(0)
 
     def powerChoice(self, world):
@@ -36,9 +44,6 @@ class GameAgent():
 
     def endOfHalfTour(self, world):
         pass
-
-def extractGameState(qType):
-    return qType.value
 
 class SmartGameAgent(GameAgent):
     agentType = None
@@ -53,7 +58,7 @@ class SmartGameAgent(GameAgent):
     def getAgentType(self):
         return self.agentType
 
-    def selectData(self, data_to_process, possible_data):
+    def _selectData(self, data_to_process, possible_data):
         best_value = float("-inf")
         best_id_rep = float("-inf")
         best_id_data = float("-inf")
@@ -64,64 +69,29 @@ class SmartGameAgent(GameAgent):
                 best_id_data = d
         return best_id_rep, best_id_data, best_value
 
-    ## Return the best tuile selection
-    def selectTuile(self, world, tuiles, violet_power = False):
-        logging.debug("[IA] Trying to find best tuile")
-
-        possible_tuiles = None
-
-        #If power is activated, agent can choose from every color
-        #except violet
-        if violet_power == True:
-            possible_tuiles = [i for i in range(8)]
-            possible_tuiles.remove(COLOR_INTEG['violet'])
-        else:
-            possible_tuiles = [COLOR_INTEG[d['color']] for d in tuiles ]
-
-        gameState = extractGameState(QUESTION_TYPE.P_VIOLET if violet_power else
-                                    QUESTION_TYPE.TUILES)
-        idata = world.getQLearningData(self.agentType, gameState)
-        data = self.agent.process(idata)
-        logging.debug("[IA] Got result from DQN: %s"%(data))
-
-        data_to_process = extractColorSelection(data[0])
-        best_id_rep, best_id_data, best_value = self.selectData(data_to_process, possible_tuiles)
-        
-        self.agent.action_taken(idata, best_id_data)
-
-        #Setting up current color in world state
-        world.setCurrentPlayedColor(INTEG_COLOR[best_id_rep])
-
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
-
-        logging.info("Selecting tuile %s"%(INTEG_COLOR[best_id_rep]))
-        return str(best_id_rep)
-
-    ## Return the best next pos
-    def nextPos(self, world, available_pos, color):
-        logging.debug("[IA] Trying to find best new Position")
-
-        possible_positions = [int(p) for p in available_pos]
-
-        gameState = extractGameState(QUESTION_TYPE.MOVE if color == None else
-                                    QUESTION_TYPE.P_BLANC)
-
-        ##Save in case we have to switch for white power
-        saved_color = world.getCurrentPlayedColor()
-
-        if color != None:
-            world.setCurrentPlayedColor(color['color'])
+    def _selectPosition(self, world, gameState, possible_data):
+        logging.debug("[IA][GameState=%s] Trying to find an optimal position between %s"%(gameState, possible_data))
 
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
-        logging.debug("[IA] Got result from DQN: %s"%(data))
+        logging.debug("[IA][GameState=%s] Got result from DQN: %s"%(gameState, data))
 
         data_to_process = extractPositionSelection(data[0])
-        best_id_rep, best_id_data, best_value = self.selectData(data_to_process, possible_positions)
+        best_id_rep, best_id_data, best_value = self._selectData(data_to_process, possible_data)
 
         ##Add 8 because of position in actions
         assert(data[0][best_id_data + 8].item() == best_value.item())
         self.agent.action_taken(idata, best_id_data + 8)
+
+        return best_id_rep, best_id_data, best_value
+
+    ## Return the best next pos
+    def nextCurrentColorPos(self, world, available_pos):
+        possible_positions = [int(p) for p in available_pos]
+
+        gameState = QUESTION_TYPE.MOVE.value
+
+        best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         #Set new position
         world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
@@ -130,14 +100,33 @@ class SmartGameAgent(GameAgent):
 
         logging.info("Selecting position %s for %s"%(best_id_data,
                     world.getCurrentPlayedColor()))
+        return (str(best_id_data))
 
-        #Reset color in case of white poser was used
-        if color != None:
-            world.setCurrentPlayedColor(saved_color)
-        return (str(best_id_rep))
+    ## Return the best next pos for white power
+    def nextPosColorWhitePower(self, world, target_color, available_pos):
+        possible_positions = [int(p) for p in available_pos]
 
-    def selectPowerBlue(self, world, available_pos):
-        logging.debug("[IA] Trying to find BLUE POS")
+        ##Save in case we have to switch for white power
+        saved_color = world.getCurrentPlayedColor()
+        world.setCurrentPlayedColor(target_color['color'])
+
+        gameState = QUESTION_TYPE.P_BLANC.value
+
+        best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
+
+        #Set new position
+        world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
+
+        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
+
+        logging.info("Selecting position %s for %s"%(best_id_data,
+                    world.getCurrentPlayedColor()))
+        world.setCurrentPlayedColor(saved_color)
+        return (str(best_id_data))
+
+    ## Return best pos for blue power, blocked path
+    def nextBlockedPathBluePower(self, world, available_pos):
+        logging.debug("[IA] Trying to find BLOCKED PATH for BLUE POWER")
 
         possible_positions = None
         if available_pos != None:
@@ -145,24 +134,13 @@ class SmartGameAgent(GameAgent):
         else:
             possible_positions = [i for i in range(10)]
 
-        gameState = extractGameState(QUESTION_TYPE.P_BLEU)
+        gameState = QUESTION_TYPE.P_BLEU.value
 
-        idata = world.getQLearningData(self.agentType, gameState)
-        data = self.agent.process(idata)
-        logging.debug("[IA] Got result from DQN: %s"%(data))
-
-        data_to_process = extractPositionSelection(data[0])
-        best_id_rep, best_id_data, best_value = self.selectData(data_to_process, possible_positions)
-
-        ##Add 8 because of position in actions
-        assert(data[0][best_id_data + 8].item() == best_value.item())
-        self.agent.action_taken(idata, best_id_data + 8)
+        best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         if available_pos != None:
-            print("BLOCKING END IS ", best_id_data)
             world.setBlockedPathByIdx(best_id_data, 1)
         else:
-            print("BLOCKING FIRST IS ", best_id_data)
             world.setBlockedPathByIdx(best_id_data, 0)
         self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
@@ -170,22 +148,13 @@ class SmartGameAgent(GameAgent):
         return (str(best_id_rep))
 
     ## Select the best position for gris power token
-    def selectPowerGris(self, world):
+    def nextPosBlackRoom(self, world):
         logging.debug("[IA] Trying to find best new BLACK TOKEN pos")
 
-        gameState = extractGameState(QUESTION_TYPE.P_GRIS)
+        gameState = QUESTION_TYPE.P_GRIS.value
 
-        idata = world.getQLearningData(self.agentType, gameState)
-        data = self.agent.process(idata)
-        logging.debug("[IA] Got result from DQN: %s"%(data))
-
-        data_to_process = extractPositionSelection(data[0])
         possible_positions = range(0, 9)
-        best_id_rep, best_id_data, best_value = self.selectData(data_to_process, possible_positions)
-
-        ##Add 8 because of position in actions
-        assert(data[0][best_id_data + 8].item() == best_value.item())
-        self.agent.action_taken(idata, best_id_data + 8)
+        best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         #Set new black token position
         world.setBlackRoom(best_id_data)
@@ -196,17 +165,64 @@ class SmartGameAgent(GameAgent):
 
         return (str(best_id_rep))
 
+    ## Return the best tuile selection
+    def selectTuile(self, world, tuiles):
+        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(QUESTION_TYPE.TUILES))
+
+        possible_tuiles = [COLOR_INTEG[d['color']] for d in tuiles ]
+
+        gameState = QUESTION_TYPE.TUILES.value
+        idata = world.getQLearningData(self.agentType, gameState)
+        data = self.agent.process(idata)
+        logging.debug("[IA] Got result from DQN: %s"%(data))
+
+        data_to_process = extractColorSelection(data[0])
+        best_id_rep, best_id_data, _ = self._selectData(data_to_process, possible_tuiles)
+        
+        self.agent.action_taken(idata, best_id_data)
+
+        #Setting up current color in world state
+        world.setCurrentPlayedColor(INTEG_COLOR[best_id_data])
+
+        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
+
+        logging.info("Selecting tuile %s"%(INTEG_COLOR[best_id_data]))
+        return str(best_id_rep)
+
+    ## Return the best tuile selection
+    def selectTuileVioletPower(self, world):
+        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(QUESTION_TYPE.P_VIOLET))
+
+        # If power is activated, agent can choose from every color except violet
+        possible_tuiles = [i for i in range(8)]
+        possible_tuiles.remove(COLOR_INTEG['violet'])
+
+        gameState = QUESTION_TYPE.P_VIOLET.value
+        idata = world.getQLearningData(self.agentType, gameState)
+        data = self.agent.process(idata)
+        logging.debug("[IA] Got result from DQN: %s"%(data))
+
+        data_to_process = extractColorSelection(data[0])
+        best_id_rep, best_id_data, _ = self._selectData(data_to_process, possible_tuiles)
+        
+        self.agent.action_taken(idata, best_id_data)
+
+        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
+
+        logging.info("Selecting tuile for VIOLET POWER %s"%(INTEG_COLOR[best_id_data]))
+        return str(best_id_rep)
+
     ## Return the best power choice
     def powerChoice(self, world):
         logging.debug("[IA] Trying to active power")
 
-        gameState = extractGameState(QUESTION_TYPE.POWER)
+        gameState = QUESTION_TYPE.POWER.value
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
         logging.debug("[IA] Got result from DQN: %s"%(data))
 
         data_to_process = extractPowerSelection(data[0])
-        best_id_rep, best_id_data, best_value = self.selectData(data_to_process, [0, 1])
+        best_id_rep, best_id_data, best_value = self._selectData(data_to_process, [0, 1])
 
         assert(data[0][best_id_data + 18].item() == best_value.item())
         self.agent.action_taken(idata, best_id_data + 18)
@@ -252,6 +268,7 @@ class SmartGameAgent(GameAgent):
     ## Reward the agents
     ## Calculate a reward based on score, innocents people, etc
     def endOfHalfTour(self, world):
+        logging.info("[IA] Notified END OF TOUR. Calculating rewards...")
         if self.agentType == PLAYER_TYPE.GHOST:
             return self._processRewardGhost(world)
         return self._processRewardDetective(world)
