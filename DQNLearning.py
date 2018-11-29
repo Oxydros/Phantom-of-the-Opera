@@ -1,3 +1,4 @@
+import json
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,23 +9,33 @@ import logging
 from Net import DQN
 from ReplayBuffer import ReplayBuffer
 
-LEARNING_RATE = 0.001
-REPLAY_SIZE = 3000
-GAMMA = 0.80
-UPDATE_FREQ = 30
+LEARNING_RATE = 0.00025
+ALPHA = 0.95
+EPS = 0.01
+REPLAY_SIZE = 1000000
+GAMMA = 0.99
+UPDATE_FREQ = 10000
+START_LEARNING = 50000
+LEARNING_FREQ = 4
 
 class DQNAgent():
     def __init__(self, input_size,
-                output_size, batch_size = 32):
+                output_size, name = "NoName", batch_size = 32):
+        self.name = name
+
         self.input_size = input_size
         self.output_size = output_size
         
         ##DQN network
         self.model = DQN(input_size, output_size)
-        self.optimizer = torch.optim.RMSprop(self.model.parameters())
+        self.load_params()
+
+        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=LEARNING_RATE,
+                            alpha=ALPHA, eps=EPS)
 
         self.param_update_counter = 0
-        self.target_model = DQN(input_size, output_size)        
+        self.target_model = DQN(input_size, output_size)
+        self.target_model.load_state_dict(self.model.state_dict())
 
         #Trainin vars
         self.batch_size = batch_size
@@ -40,22 +51,22 @@ class DQNAgent():
     ##Return the threshold for the e-greedy algorithm
     ##depending on the current step of the learning
     def get_epsilon_threshold(self, step):
-        fraction  = min(float(step) / 100, 1.0)
-        return 1.0 + fraction * -0.9
+        fraction  = min(float(step) / 1000000, 1.0)
+        return 1.0 + fraction * (0.1 - 1.0)
 
     ##Epsilon greddy selection
     ##Explore using random, or exploit the model
     def select_epsilon_greedy(self, state, step):
         rand = random.random()
         epsilon_threashold = self.get_epsilon_threshold(step)
-        if rand > epsilon_threashold:
+        if step > START_LEARNING and rand > epsilon_threashold:
             logging.debug("[IA] Taking model advice")
-            tensor = torch.FloatTensor([state])
+            tensor = torch.Tensor([state])
             return self.model(tensor)
         else:
             logging.debug("[IA] Taking random advice")
             ##Return random values for actions QTable
-            return torch.FloatTensor([[random.random() for _ in range(self.output_size)]])
+            return torch.Tensor([[random.random() for _ in range(self.output_size)]])
 
     ##Process the input data
     def process(self, state):
@@ -80,10 +91,17 @@ class DQNAgent():
         ##Saving data
         if self.last_data != None:
             raise ValueError("Missing a next state call !")
-        if action >= 20:
+        if action >= self.output_size:
             raise ValueError("Bad action value !")
         self.last_data = (state, action)
 
+    ##Return true if we are waiting a next state
+    def awaitingNextState(self):
+        return self.last_data != None
+
+    ## Fetch the last data and add it next state
+    ## Add the result in the scheduled queue
+    ## to await the reward
     def next_state(self, new_state):
         state, action = self.last_data
         data_to_save = (state, action, new_state)
@@ -94,6 +112,7 @@ class DQNAgent():
     ##Reward all actions taken since last reward
     ##Reward is every half turn (ghost scream, innocents, etc.)
     def reward(self, rew, end_game):
+        logging.debug("[IA] Applying reward of %d to %s"%(rew, self.scheduled_data))
         rew = max(-1.0, min(rew, 1.0))
         ##Iterating over scheduled data to append reward
         for scheduled_data in self.scheduled_data:
@@ -108,19 +127,18 @@ class DQNAgent():
 
     def train(self):
         ##Train every 4 steps and if bath size is OK
-        if not (self.replay_buffer.can_sample_batch(self.batch_size) and self.counter % 4 == 0):
+        if not (self.counter > START_LEARNING and
+                self.counter % LEARNING_FREQ == 0 and
+                self.replay_buffer.can_sample_batch(self.batch_size)):
             return
         state_batch, act_batch, rew_batch, nstate_batch, d_batch = self.replay_buffer.get_batch(self.batch_size)
         state_batch = torch.from_numpy(state_batch)
         act_batch = torch.from_numpy(act_batch).long()
         rew_batch = torch.from_numpy(rew_batch).view(self.batch_size, 1)
         nstate_batch = torch.from_numpy(nstate_batch)
-        d_batch = torch.from_numpy(1 - d_batch).type(torch.FloatTensor).view(self.batch_size, 1)
+        d_batch = torch.from_numpy(1 - d_batch).type(torch.Tensor).view(self.batch_size, 1)
 
         q_values = self.model(state_batch)
-
-        print(q_values)
-        print(act_batch)
 
         ## Get the taken action for each state (action is the index of the QValue taken from the table)
         current_Q_Values = q_values.gather(1, act_batch.unsqueeze(1))
@@ -152,9 +170,20 @@ class DQNAgent():
         ## Update target model
         if self.param_update_counter % UPDATE_FREQ == 0:
             self.target_model.load_state_dict(self.model.state_dict())
-
+            self.save_params()
 
     ##Reset step
     def reset(self):
         logging.debug("[DQN] Reset step counter")
         self.counter = 0
+
+    def save_params(self):
+        torch.save(self.model, "./saved_params_" + self.name)
+
+    def load_params(self):
+        try:
+            logging.info("Fetching previous trained model")
+            self.model = torch.load("./saved_params_" + self.name)
+            logging.info("Previous model loaded with success")
+        except:
+            logging.info("Couldn't load model. Starting from scratch")

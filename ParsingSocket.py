@@ -1,5 +1,6 @@
 import re
 import socket
+import logging
 import protocol
 import messages
 import Parsing
@@ -54,18 +55,47 @@ class Parser :
                         "InfoStatus" : INFO_STATUS.GHOST,
                         "Data" : ghost[0]
                   }
-            infosSuspect = re.findall(r'noir-7-suspect a été tiré', data)
+            infosSuspect = re.findall(r'(.*) a été tiré', data)
             if len(infosSuspect) > 0:
-                  tuileInfo = infosSuspect[0]
+                  if infosSuspect[0] == "fantome":
+                        return {
+                              "InfoStatus" : INFO_STATUS.DRAW_GHOST
+                        }
+                  tuileInfo = infosSuspect[0].split('-')
                   tuile = {
                         'color': tuileInfo[0],
                         'pos': int(tuileInfo[1]),
                         'state' : tuileInfo[2]
                   }
                   return {
-                        "InfosStatus" : INFO_STATUS.SUSPECT,
+                        "InfoStatus" : INFO_STATUS.SUSPECT,
                         "Data": tuile
                   }
+            agentTurn = re.findall(r'Tour de (.*)', data)
+            if len(agentTurn) > 0:
+                  return {
+                        "InfoStatus" : INFO_STATUS.CHANGE_HAND,
+                        "Data": agentTurn[0]
+                  }
+            newPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', data)
+            if len(newPlacement) > 0:
+                  tuileInfo = newPlacement[0].split('-')
+                  tuile = [{
+                        'color': tuileInfo[0],
+                        'pos': int(tuileInfo[1]),
+                        'state' : tuileInfo[2]
+                  }]
+                  return {
+                        "InfoStatus" : INFO_STATUS.PLACEMENT,
+                        "Data": tuile
+                  }
+            finalScore = re.findall(r'Score final : (.*)', data)
+            if len(finalScore) > 0:
+                  return {
+                        "InfoStatus" : INFO_STATUS.FINAL_SCORE,
+                        "Data": int(finalScore[0])
+                  }
+            logging.debug("COULDN'T PARSE!")
             return {
                   "InfoStatus" : INFO_STATUS.ERROR,
                   "Data" : 'Nothing Change'

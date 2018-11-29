@@ -42,7 +42,13 @@ class GameAgent():
         logging.info("Selecting Random Power 0")
         return str(0)
 
+    def triggerNextState(self, world, gameState):
+        logging.info("Ignored trigger next state")
+
     def endOfHalfTour(self, world):
+        pass
+
+    def reward(self, reward):
         pass
 
 class SmartGameAgent(GameAgent):
@@ -50,15 +56,19 @@ class SmartGameAgent(GameAgent):
 
     def __init__(self, agentType):
         self.agentType = agentType
+        agentStr = "ghost" if self.agentType == PLAYER_TYPE.GHOST else "detective"
         if self.agentType == PLAYER_TYPE.GHOST:
-            self.agent = DQNAgent(23, 20)
+            self.agent = DQNAgent(23, 20, name=agentStr)
         else:
-            self.agent = DQNAgent(22, 20)
+            self.agent = DQNAgent(22, 20, name=agentStr)
 
     def getAgentType(self):
         return self.agentType
 
+    ## Return the best data found in data_to_process, which is also
+    ## present in possible_data
     def _selectData(self, data_to_process, possible_data):
+        found = False
         best_value = float("-inf")
         best_id_rep = float("-inf")
         best_id_data = float("-inf")
@@ -67,12 +77,15 @@ class SmartGameAgent(GameAgent):
                 best_value = data_to_process[d]
                 best_id_rep = idx
                 best_id_data = d
+                found = True
+        if found is False:
+            raise RuntimeError("Couldn't find any possible_data !")
         return best_id_rep, best_id_data, best_value
 
     def _selectPosition(self, world, gameState, possible_data):
         logging.debug("[IA][GameState=%s] Trying to find an optimal position between %s"%(gameState, possible_data))
 
-        idata = world.getQLearningData(self.agentType, gameState)
+        idata = world.getQLearningData(self.agentType, gameState.value)
         data = self.agent.process(idata)
         logging.debug("[IA][GameState=%s] Got result from DQN: %s"%(gameState, data))
 
@@ -89,14 +102,12 @@ class SmartGameAgent(GameAgent):
     def nextCurrentColorPos(self, world, available_pos):
         possible_positions = [int(p) for p in available_pos]
 
-        gameState = QUESTION_TYPE.MOVE.value
+        gameState = QUESTION_TYPE.MOVE
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         #Set new position
         world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
-
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
         logging.info("Selecting position %s for %s"%(best_id_data,
                     world.getCurrentPlayedColor()))
@@ -110,14 +121,12 @@ class SmartGameAgent(GameAgent):
         saved_color = world.getCurrentPlayedColor()
         world.setCurrentPlayedColor(target_color['color'])
 
-        gameState = QUESTION_TYPE.P_BLANC.value
+        gameState = QUESTION_TYPE.P_BLANC
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         #Set new position
         world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
-
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
         logging.info("Selecting position %s for %s"%(best_id_data,
                     world.getCurrentPlayedColor()))
@@ -134,7 +143,7 @@ class SmartGameAgent(GameAgent):
         else:
             possible_positions = [i for i in range(10)]
 
-        gameState = QUESTION_TYPE.P_BLEU.value
+        gameState = QUESTION_TYPE.P_BLEU
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
@@ -142,7 +151,6 @@ class SmartGameAgent(GameAgent):
             world.setBlockedPathByIdx(best_id_data, 1)
         else:
             world.setBlockedPathByIdx(best_id_data, 0)
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
         logging.info("Selecting position %s for BLEU"%(best_id_data))
         return (str(best_id_rep))
@@ -151,15 +159,13 @@ class SmartGameAgent(GameAgent):
     def nextPosBlackRoom(self, world):
         logging.debug("[IA] Trying to find best new BLACK TOKEN pos")
 
-        gameState = QUESTION_TYPE.P_GRIS.value
+        gameState = QUESTION_TYPE.P_GRIS
 
         possible_positions = range(0, 9)
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
         #Set new black token position
         world.setBlackRoom(best_id_data)
-
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
         logging.info("Selecting position %s for BLACK TOKEN"%(best_id_data))
 
@@ -184,8 +190,6 @@ class SmartGameAgent(GameAgent):
         #Setting up current color in world state
         world.setCurrentPlayedColor(INTEG_COLOR[best_id_data])
 
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
-
         logging.info("Selecting tuile %s"%(INTEG_COLOR[best_id_data]))
         return str(best_id_rep)
 
@@ -207,10 +211,8 @@ class SmartGameAgent(GameAgent):
         
         self.agent.action_taken(idata, best_id_data)
 
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
-
         logging.info("Selecting tuile for VIOLET POWER %s"%(INTEG_COLOR[best_id_data]))
-        return str(best_id_rep)
+        return str(INTEG_COLOR[best_id_data])
 
     ## Return the best power choice
     def powerChoice(self, world):
@@ -227,10 +229,17 @@ class SmartGameAgent(GameAgent):
         assert(data[0][best_id_data + 18].item() == best_value.item())
         self.agent.action_taken(idata, best_id_data + 18)
 
-        self.agent.next_state(world.getQLearningData(self.agentType, gameState))
-
         logging.info("Selecting power %s"%(best_id_data))
         return (str(best_id_rep))
+
+    ## Fetch the current state and feed it to the agent
+    ## as a new state: S+1(q)
+    def triggerNextState(self, world, gameState):
+        logging.debug("[IA] Next state trigger, fetching game info...")
+        if not isinstance(gameState, QUESTION_TYPE):
+            raise ValueError("Invalid game state")
+        if self.agent.awaitingNextState():
+            self.agent.next_state(world.getQLearningData(self.agentType, gameState))
 
     def _processRewardGhost(self, world):
         ## Compute ratio score
@@ -272,3 +281,6 @@ class SmartGameAgent(GameAgent):
         if self.agentType == PLAYER_TYPE.GHOST:
             return self._processRewardGhost(world)
         return self._processRewardDetective(world)
+
+    def reward(self, reward):
+        self.agent.reward(reward, True)

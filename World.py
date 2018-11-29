@@ -68,7 +68,7 @@ class World:
     tour = 0
     status = {}
     ghost_color = ""
-    current_color = "rose"
+    current_color = "none"
 
     def __init__(self, *args, **kwargs):
         pass
@@ -78,7 +78,7 @@ class World:
             raise ValueError("Position %d is not valid"%(pos))
         
     def _checkColor(self, color):
-        if not color in TOTAL_COLORS:
+        if not color in TOTAL_COLORS and color != "none":
             raise ValueError("Color %s doesn't exist!"%(color))
 
     def setGhostColor(self, color):
@@ -173,15 +173,20 @@ class World:
         return self.locked_path
     
     ## Print the MAP
-    def printMap(self):
-        print("---- GAME MAP ----")
-        print("Tour is %d and score is %d"%(self.tour, self.score))
-        print("Blocked path is %s"%(self.locked_path))
-        print("Dark room is %d"%(self.blacktoken_pos))
-        print("Cleaned: %s"%(self.innocent_colors))
+    def printMap(self, gameState = None):
+        logging.debug("---- GAME MAP ----")
+        if gameState != None:
+            logging.debug("Called for STATE: %s ==> %d"%(QUESTION_TYPE(gameState),
+                            gameState))
+        logging.debug("Tour is %d and score is %d"%(self.tour, self.score))
+        logging.debug("Ghost is %s"%(self.ghost_color))
+        logging.debug("Current played color is %s"%(self.current_color))
+        logging.debug("Blocked path is %s"%(self.locked_path))
+        logging.debug("Dark room is %d"%(self.blacktoken_pos))
+        logging.debug("Cleaned colors: %s"%(self.innocent_colors))
         for id_room, room in enumerate(self.game_map):
-            print("Room %d: %s"%(id_room, room))
-        print("---------------")
+            logging.debug("Room %d: %s"%(id_room, room))
+        logging.debug("---------------")
     
     ## Set the score of the current game
     def setScore(self, newScore):
@@ -251,12 +256,17 @@ class World:
 
     def getQLearningData(self, agentType, gameState):
         data = []
+        logging.debug("--QLearningData--")
+        logging.debug("Color positions:")
         ##Setup color position data 8
         for color in INTEG_COLOR:
             color_pos = self.getColorPosition(color)
             data.append(color_pos)
+            logging.debug("%s: %d"%(color, color_pos))
+        logging.debug("Innocents color:")
         ##Setup innocents color 8
         for color in INTEG_COLOR:
+            logging.debug("%s: %d"%(color, 1 if self.isInnocent(color) else 0))
             if self.isInnocent(color):
                 data.append(1)
             else:
@@ -265,13 +275,20 @@ class World:
         sortedLock = sorted(self.locked_path)
         data.append(sortedLock[0])
         data.append(sortedLock[1])
+        logging.debug("Blocked path: %d %d"%(sortedLock[0], sortedLock[1]))
         data.append(self.blacktoken_pos)
+        logging.debug("Black room: %d"%(self.blacktoken_pos))
         ##Setup score => 1
+        logging.debug("Score: %d"%(self.score))
         data.append(self.score)
-        data.append(COLOR_INTEG[self.current_color])
+        data.append(COLOR_INTEG[self.current_color] if self.current_color != "none" else -1)
+        logging.debug("Current color: %d"%(COLOR_INTEG[self.current_color] if self.current_color != "none" else -1))
         data.append(gameState)
+        logging.debug("Current gameState: %d"%(gameState))
         if (agentType == PLAYER_TYPE.GHOST):
             data.append(COLOR_INTEG[self.ghost_color])
+        logging.debug("--QLearningData END--")
+        self.printMap(gameState)
         return data
 
 if __name__ == "__main__":
