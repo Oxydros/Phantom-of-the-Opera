@@ -1,4 +1,4 @@
-!#/usr/bin/env python
+#!/usr/bin/env python
 
 from random import shuffle,randrange
 from time import sleep
