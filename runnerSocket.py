@@ -134,22 +134,25 @@ class GameRunner(object):
 		return "Unknown"
 
 def lancer(agentType, smart=True):
-	logging.info("Launching %s IA"%(agentType))
-	parser = Parser(agentType)
-	logging.info("Init network...")
-	parser.initNetwork()
-	logging.info("Done!")
 	gameAgent = None
-	if smart:
-		gameAgent = SmartGameAgent(agentType)
-	else:
-		gameAgent = GameAgent()
-	runner = GameRunner()
-	while True:
-		world = World()
-		runner.resetRunner()
-		result = runner.loop(world, parser, gameAgent, agentType)        
-		logging.debug("Got result from game %s"%(result))
-		if result == "EndGame":
-			break
+	try:
+		logging.info("Launching %s IA"%(agentType))
+		parser = Parser(agentType)
+		logging.info("Init network...")
+		parser.initNetwork()
+		logging.info("Done!")
+		if smart:
+			gameAgent = SmartGameAgent(agentType)
+		else:
+			gameAgent = GameAgent()
+		runner = GameRunner()
+		while True:
+			world = World()
+			runner.resetRunner()
+			result = runner.loop(world, parser, gameAgent, agentType)        
+			logging.debug("Got result from game %s"%(result))
+			if result == "EndGame":
+				break
+	except Exception as e:
+		logging.info("Unexpected exit: %s"%(e))
 			

@@ -9,14 +9,14 @@ import logging
 from Net import DQN
 from ReplayBuffer import ReplayBuffer
 
-LEARNING_RATE = 0.00025
+LEARNING_RATE = 0.000025
 ALPHA = 0.95
 EPS = 0.01
 REPLAY_SIZE = 1000000
 GAMMA = 0.99
 UPDATE_FREQ = 5000
 START_LEARNING = 50000
-LEARNING_FREQ = 4
+LEARNING_FREQ = 16
 
 class DQNAgent():
     def __init__(self, input_size,
@@ -80,8 +80,6 @@ class DQNAgent():
         ##Retrieve Q values for actions
         actions = self.select_epsilon_greedy(state, self.counter)
 
-        # logging.info("[DQN] e-greedy actions: %s"%(actions))
-
         ##Return data on possible actions
         return actions
 
@@ -91,7 +89,7 @@ class DQNAgent():
         ##Saving data
         if self.last_data != None:
             raise ValueError("Missing a next state call !")
-        if action >= self.output_size:
+        if action not in [i for i in range(self.output_size)]:
             raise ValueError("Bad action value !")
         self.last_data = (state, action)
 
@@ -125,6 +123,7 @@ class DQNAgent():
         ##Trigger train
         self.train()
 
+    #CF Algorithm 1 from paper http://web.stanford.edu/class/psych209/Readings/MnihEtAlHassibis15NatureControlDeepRL.pdf
     def train(self):
         ##Train every 4 steps and if bath size is OK
         if not (self.counter > START_LEARNING and
@@ -143,25 +142,25 @@ class DQNAgent():
         ## Get the taken action for each state (action is the index of the QValue taken from the table)
         current_Q_Values = q_values.gather(1, act_batch.unsqueeze(1))
 
-        ## Compute best action for next state
-        next_max_q = self.target_model(nstate_batch).detach().max(1)[0].view(self.batch_size, 1)
+        ## Compute best Q value for next state
+        next_max_q = self.target_model(nstate_batch).detach().max(1)[0].view(self.batch_size, -1)
 
         ## If the state was the end of the game don't take in consideration the next Q value
+        ## as it doesn't exist
         ## Set them to 0
         next_Q_values = d_batch * next_max_q
 
-        ## Compute the target
+        ## Add the reward to the potential future reward
         target_Q_values = rew_batch + (GAMMA * next_Q_values)
 
-        ## Compute error
-        bellman_error = target_Q_values - current_Q_Values
-        clipped_bellman_error = bellman_error.clamp(-1, 1)
-
-        d_error = clipped_bellman_error * -1.0
+        #based on https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+        loss = F.smooth_l1_loss(current_Q_Values, target_Q_values)
 
         ## Init optimizer
         self.optimizer.zero_grad()
-        current_Q_Values.backward(d_error.data)
+        loss.backward()
+        for param in self.model.parameters():
+            param.grad.data.clamp(-1, 1)
 
         ## Optimize params
         self.optimizer.step()
@@ -181,15 +180,18 @@ class DQNAgent():
         self.counter = 0
 
     def save_params(self):
-        torch.save(self.model, "./saved_params_" + self.name)
+        logging.info("Saving model params to ./saved_params_" + self.name)
+        torch.save(self.target_model, "./saved_params_" + self.name)
 
     def load_params(self):
         try:
             logging.info("Fetching previous trained model")
             self.model = torch.load("./saved_params_" + self.name)
-            logging.info("Previous model loaded with success")
+            logging.info("Previous model loaded with success. Weights:")
+            for param in self.model.parameters():
+                logging.info(param.data)
         except:
             logging.info("Couldn't load model. Starting from scratch")
 
     def __del__(self):
-        self.load_params()
+        self.save_params()
