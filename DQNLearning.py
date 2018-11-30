@@ -14,9 +14,9 @@ ALPHA = 0.95
 EPS = 0.01
 REPLAY_SIZE = 1000000
 GAMMA = 0.99
-UPDATE_FREQ = 5000
-START_LEARNING = 50000
-LEARNING_FREQ = 16
+UPDATE_FREQ = 300
+START_LEARNING = 30000
+LEARNING_FREQ = 12
 
 class DQNAgent():
     def __init__(self, input_size,
@@ -167,11 +167,11 @@ class DQNAgent():
         self.optimizer.step()
         self.param_update_counter += 1
 
-        if self.counter % 500 == 0:
-            logging.info("Step %d"%(self.counter))
+        if self.counter % 10 == 0:
+            logging.info("Step %d, params %d"%(self.counter, self.param_update_counter))
         ## Update target model
         if self.param_update_counter % UPDATE_FREQ == 0:
-            logging.info("Step %d - Updating target model"%(self.counter))
+            logging.info("Step %d, params %d - Updating target model"%(self.counter, self.param_update_counter))
             self.target_model.load_state_dict(self.model.state_dict())
             self.save_params()
 
