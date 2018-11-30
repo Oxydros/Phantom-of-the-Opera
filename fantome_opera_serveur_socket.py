@@ -31,11 +31,11 @@ def informer(texte):
     message(texte,joueurs)
 
 def demander(q,j):
-    informer("QUESTION : "+ q)
+    # informer("QUESTION : "+ q)
     protocol.send_one_message(clients[j.numero], messages.Question(q).toJson())
     r = protocol.recv_one_message(clients[j.numero])
     r = messages.deserialize(r)
-    informer("REPONSE DONNEE : " + str(r.content))
+    # informer("REPONSE DONNEE : " + str(r.content))
     return str(r.content)
 
 class personnage:
@@ -59,7 +59,7 @@ class joueur:
         w = demander("Tuiles disponibles : " + str(t) + " choisir entre 0 et " + str(len(t)-1),self)
         i = int(w) if w.isnumeric() and int(w) in range(len(t)) else 0
         p = t[i]
-        informer("REPONSE INTERPRETEE : "+str(p))
+        # informer("REPONSE INTERPRETEE : "+str(p))
         informer(self.role + " joue " + p.couleur)
         del t[i]
         return p
@@ -192,14 +192,14 @@ class partie:
         global WIN_D, WIN_G
         while self.start < self.end and len([p for p in self.personnages if p.suspect]) > 1:
             self.tour()
-        informer("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
+        # informer("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
         if self.start < self.end:
             WIN_D += 1
         else:
             WIN_G += 1
-        print("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
+        # print("L'enquêteur a trouvé - c'était " + str(self.fantome) if self.start < self.end else "Le fantôme a gagné")
         informer("Score final : "+str(self.end-self.start))
-        print("Score final : "+str(self.end-self.start))
+        # print("Score final : "+str(self.end-self.start))
         return self.end - self.start
     def __repr__(self):
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
@@ -218,9 +218,18 @@ def init_connexion():
 
 init_connexion()
 
-for i in range(500):
+for i in range(100000):
     scores.append(partie(joueurs).lancer())
-    print("partie : " + str(i))
+    if i % 1000 == 0:
+        print('-------------')
+        last_scores = scores[-1000:]
+        win_d = [win for win in last_scores if win > 0]
+        win_g = [win for win in last_scores if win <= 0]
+        print("partie played : " + str(i))
+        print("Detective won %d times in the last %d games"%(len(win_d), len(last_scores)))
+        print("Ghost won %d times in the last %d games"%(len(win_g), len(last_scores)))
+        print ("winrate last 1000: " + str(len([win for win in last_scores if win <= 0]) / len(last_scores) * 100))
+        print('-------------')
     informer("ResetGame")
 
 informer("EndGame")

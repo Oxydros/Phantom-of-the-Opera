@@ -11,7 +11,7 @@ root = logging.getLogger()
 root.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.CRITICAL)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 root.addHandler(ch)
@@ -43,7 +43,7 @@ class GameRunner(object):
 		if infoData['InfoStatus'] == INFO_STATUS.OK:
 			if msgContent.find("Rappel des positions :") == -1 and infoData.get('Tour', None) != None:
 				self._triggetNextState(world, gameAgent)
-			logging.info("Got info TOUR %s"%(infoData))
+			logging.debug("Got info TOUR %s"%(infoData))
 			world.setStatus(infoData)
 			# ##Check if a new tour is starting
 			# ## to do so, check if the msg content is not violet power
@@ -51,24 +51,24 @@ class GameRunner(object):
 			# if msgContent.find("Rappel des positions :") == -1 and infoData.get('Tour', None) != None:
 			# 	gameAgent.endOfHalfTour(world)
 		elif infoData['InfoStatus'] == INFO_STATUS.PLACEMENT:
-			logging.info("Got info PLACEMENT %s"%(infoData))
+			logging.debug("Got info PLACEMENT %s"%(infoData))
 			world.updateTuiles(infoData['Data'])
 		elif infoData['InfoStatus'] == INFO_STATUS.GHOST:
 			if agentType == PLAYER_TYPE.DETECTIVE:
 				raise RuntimeError("Received ghost but I am detective !")
-			logging.info("Got info GHOST %s"%(infoData))
+			logging.debug("Got info GHOST %s"%(infoData))
 			world.setGhostColor(infoData['Data'])
 		elif infoData['InfoStatus'] == INFO_STATUS.SUSPECT:
 			world.setInnocentColor(infoData['Data']['color'])
 		elif infoData['InfoStatus'] == INFO_STATUS.CHANGE_HAND:
 			new_hand = infoData["Data"]
-			logging.info("Change hand from %s to %s", self.current_hand, new_hand)
+			logging.debug("Change hand from %s to %s", self.current_hand, new_hand)
 			self.current_hand = new_hand
 			self._triggetNextState(world, gameAgent)
 			if new_hand == hand_name[agentType]:
 				world.setCurrentPlayedColor('none')
 		elif infoData['InfoStatus'] == INFO_STATUS.DRAW_GHOST:
-			logging.info("Draw FANTOME")
+			logging.debug("Draw FANTOME")
 		elif infoData['InfoStatus'] == INFO_STATUS.FINAL_SCORE:
 			self._triggetNextState(world, gameAgent)
 			finalScore = infoData['Data']
@@ -85,7 +85,7 @@ class GameRunner(object):
 		questionType = questionData["QuestionType"]
 		answer = None
 
-		logging.info("Got question %s"%(questionData))
+		logging.debug("Got question %s"%(questionData))
 
 		#Update world if there is any new informations
 		world.updateState(questionData)
@@ -111,7 +111,7 @@ class GameRunner(object):
 		elif questionType == QUESTION_TYPE.ERROR:
 			raise ValueError("Unknown question " + msg.content)
 
-		logging.info("Sending answer %s"%(answer))
+		logging.debug("Sending answer %s"%(answer))
 		parser.sendMsg(answer)
 		self.previous_question = questionType
 
@@ -149,7 +149,7 @@ def lancer(agentType, smart=True):
 		world = World()
 		runner.resetRunner()
 		result = runner.loop(world, parser, gameAgent, agentType)        
-		logging.info("Got result from game %s"%(result))
+		logging.debug("Got result from game %s"%(result))
 		if result == "EndGame":
 			break
 			

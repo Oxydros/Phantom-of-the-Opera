@@ -14,7 +14,7 @@ ALPHA = 0.95
 EPS = 0.01
 REPLAY_SIZE = 1000000
 GAMMA = 0.99
-UPDATE_FREQ = 10000
+UPDATE_FREQ = 5000
 START_LEARNING = 50000
 LEARNING_FREQ = 4
 
@@ -167,8 +167,11 @@ class DQNAgent():
         self.optimizer.step()
         self.param_update_counter += 1
 
+        if self.counter % 500 == 0:
+            logging.info("Step %d"%(self.counter))
         ## Update target model
         if self.param_update_counter % UPDATE_FREQ == 0:
+            logging.info("Step %d - Updating target model"%(self.counter))
             self.target_model.load_state_dict(self.model.state_dict())
             self.save_params()
 
@@ -187,3 +190,6 @@ class DQNAgent():
             logging.info("Previous model loaded with success")
         except:
             logging.info("Couldn't load model. Starting from scratch")
+
+    def __del__(self):
+        self.load_params()

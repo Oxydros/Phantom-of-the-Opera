@@ -28,7 +28,7 @@ class ReplayBuffer(object):
         assert self.can_sample_batch(batch_size)
         ## Generate random ids
         idxs = [random.randint(0, self.buffer_size - 1) for i in range(batch_size)]
-        logging.info("[ReplayBuffer] Selected random batch : %s"%(idxs))
+        logging.debug("[ReplayBuffer] Selected random batch : %s"%(idxs))
 
         ## Generate batch given the random ids
         state_batch = self.states[idxs]

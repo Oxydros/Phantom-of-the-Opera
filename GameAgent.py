@@ -15,35 +15,35 @@ def extractPowerSelection(tensor):
 
 class GameAgent():
     def nextCurrentColorPos(self, world, available_pos):
-        logging.info("Selecting Random Pos 0")
+        logging.debug("Selecting Random Pos 0")
         return str(0)
 
     def nextPosColorWhitePower(self, world, target_color, available_pos):
-        logging.info("Selecting Random WHITE POWER")
+        logging.debug("Selecting Random WHITE POWER")
         return str(0)
 
     def nextBlockedPathBluePower(self, world, available_pos):
-        logging.info("Selecting Random BLUE POWER")
+        logging.debug("Selecting Random BLUE POWER")
         return str(0)
 
     def nextPosBlackRoom(self, world):
-        logging.info("Selecting Random GRIS POWER")
+        logging.debug("Selecting Random GRIS POWER")
         return str(0)
 
     def selectTuile(self, world, tuiles):
-        logging.info("Selecting Random Tuile 0")
+        logging.debug("Selecting Random Tuile 0")
         return str(0)
 
     def selectTuileVioletPower(self, world, tuiles):        
-        logging.info("Selecting Random Tuile 0 for VIOLET POWER")
+        logging.debug("Selecting Random Tuile 0 for VIOLET POWER")
         return str(0)
 
     def powerChoice(self, world):
-        logging.info("Selecting Random Power 0")
+        logging.debug("Selecting Random Power 0")
         return str(0)
 
     def triggerNextState(self, world, gameState):
-        logging.info("Ignored trigger next state")
+        logging.debug("Ignored trigger next state")
 
     def endOfHalfTour(self, world):
         pass
@@ -109,7 +109,7 @@ class SmartGameAgent(GameAgent):
         #Set new position
         world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
 
-        logging.info("Selecting position %s for %s"%(best_id_data,
+        logging.debug("Selecting position %s for %s"%(best_id_data,
                     world.getCurrentPlayedColor()))
         return (str(best_id_data))
 
@@ -128,7 +128,7 @@ class SmartGameAgent(GameAgent):
         #Set new position
         world.setColorPosition(world.getCurrentPlayedColor(), best_id_data)
 
-        logging.info("Selecting position %s for %s"%(best_id_data,
+        logging.debug("Selecting position %s for %s"%(best_id_data,
                     world.getCurrentPlayedColor()))
         world.setCurrentPlayedColor(saved_color)
         return (str(best_id_data))
@@ -152,7 +152,7 @@ class SmartGameAgent(GameAgent):
         else:
             world.setBlockedPathByIdx(best_id_data, 0)
 
-        logging.info("Selecting position %s for BLEU"%(best_id_data))
+        logging.debug("Selecting position %s for BLEU"%(best_id_data))
         return (str(best_id_rep))
 
     ## Select the best position for gris power token
@@ -167,7 +167,7 @@ class SmartGameAgent(GameAgent):
         #Set new black token position
         world.setBlackRoom(best_id_data)
 
-        logging.info("Selecting position %s for BLACK TOKEN"%(best_id_data))
+        logging.debug("Selecting position %s for BLACK TOKEN"%(best_id_data))
 
         return (str(best_id_rep))
 
@@ -190,7 +190,7 @@ class SmartGameAgent(GameAgent):
         #Setting up current color in world state
         world.setCurrentPlayedColor(INTEG_COLOR[best_id_data])
 
-        logging.info("Selecting tuile %s"%(INTEG_COLOR[best_id_data]))
+        logging.debug("Selecting tuile %s"%(INTEG_COLOR[best_id_data]))
         return str(best_id_rep)
 
     ## Return the best tuile selection
@@ -211,7 +211,7 @@ class SmartGameAgent(GameAgent):
         
         self.agent.action_taken(idata, best_id_data)
 
-        logging.info("Selecting tuile for VIOLET POWER %s"%(INTEG_COLOR[best_id_data]))
+        logging.debug("Selecting tuile for VIOLET POWER %s"%(INTEG_COLOR[best_id_data]))
         return str(INTEG_COLOR[best_id_data])
 
     ## Return the best power choice
@@ -229,7 +229,7 @@ class SmartGameAgent(GameAgent):
         assert(data[0][best_id_data + 18].item() == best_value.item())
         self.agent.action_taken(idata, best_id_data + 18)
 
-        logging.info("Selecting power %s"%(best_id_data))
+        logging.debug("Selecting power %s"%(best_id_data))
         return (str(best_id_rep))
 
     ## Fetch the current state and feed it to the agent
@@ -277,7 +277,7 @@ class SmartGameAgent(GameAgent):
     ## Reward the agents
     ## Calculate a reward based on score, innocents people, etc
     def endOfHalfTour(self, world):
-        logging.info("[IA] Notified END OF TOUR. Calculating rewards...")
+        logging.debug("[IA] Notified END OF TOUR. Calculating rewards...")
         if self.agentType == PLAYER_TYPE.GHOST:
             return self._processRewardGhost(world)
         return self._processRewardDetective(world)

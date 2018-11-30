@@ -23,26 +23,26 @@ def lancer():
         infos = parser.readInfo()
         # time.sleep(1)
         if infos['InfoStatus'] == INFO_STATUS.OK:
-                logging.info("Got info tour %s"%(infos))
+                logging.debug("Got info tour %s"%(infos))
                 world.setStatus(infos)
         elif infos['InfoStatus'] == INFO_STATUS.END:
                 break
         elif infos['InfoStatus'] == INFO_STATUS.PLACEMENT:
-                logging.info("Got info tour %s"%(infos))
+                logging.debug("Got info tour %s"%(infos))
                 world.updateTuiles(infos['Data'])
         question = parser.readQuestion()
         world.updateState(question)
         answer = ""
         if question["QuestionType"] == QUESTION_TYPE.MOVE:
-                logging.info("Got question %s"%(question))
+                logging.debug("Got question %s"%(question))
                 answer = d.nextPos(question["Data"])
         elif question["QuestionType"] == QUESTION_TYPE.POWER:
-                logging.info("Got question %s"%(question))
+                logging.debug("Got question %s"%(question))
                 answer = d.powerChoice()
         elif question["QuestionType"] == QUESTION_TYPE.TUILES:
-                logging.info("Got question %s"%(question))
+                logging.debug("Got question %s"%(question))
                 answer = d.selectTuile(question["Data"])
         parser.writeFileAnswer(answer)
         # time.sleep(1)
     world.printMap()
-    logging.info("END IA")
+    logging.debug("END IA")
