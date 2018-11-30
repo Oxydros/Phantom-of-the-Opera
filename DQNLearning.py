@@ -9,10 +9,6 @@ import logging
 from Net import DQN
 from ReplayBuffer import ReplayBuffer
 
-CUDA_AVAILABLE = torch.cuda.is_available()
-tensorType = torch.cuda.FloatTensor if CUDA_AVAILABLE else torch.Tensor
-destDevice = torch.device('cuda') if CUDA_AVAILABLE else torch.device('cpu')
-
 LEARNING_RATE = 0.000025
 ALPHA = 0.95
 EPS = 0.01
@@ -31,15 +27,16 @@ class DQNAgent():
         self.output_size = output_size
         
         ##DQN network
-        self.model = DQN(input_size, output_size).type(tensorType)
+        self.model = DQN(input_size, output_size)
         self.load_params()
+
+        self.target_model = DQN(input_size, output_size)
+        self.target_model.load_state_dict(self.model.state_dict())
 
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=LEARNING_RATE,
                             alpha=ALPHA, eps=EPS)
 
         self.param_update_counter = 0
-        self.target_model = DQN(input_size, output_size).type(tensorType)
-        self.target_model.load_state_dict(self.model.state_dict())
 
         #Trainin vars
         self.batch_size = batch_size
@@ -51,8 +48,6 @@ class DQNAgent():
         ##Saved data
         self.last_data = None
         self.scheduled_data = []
-
-        logging.info("Using device %s"%(destDevice))
 
     ##Return the threshold for the e-greedy algorithm
     ##depending on the current step of the learning
@@ -67,8 +62,8 @@ class DQNAgent():
         epsilon_threashold = self.get_epsilon_threshold(step)
         if step > START_LEARNING and rand > epsilon_threashold:
             logging.debug("[IA] Taking model advice")
-            tensor = torch.Tensor([state], device=destDevice)
-            return self.model(tensor).cpu()
+            tensor = torch.Tensor([state])
+            return self.model(tensor)
         else:
             logging.debug("[IA] Taking random advice")
             ##Return random values for actions QTable
@@ -137,11 +132,11 @@ class DQNAgent():
                 self.replay_buffer.can_sample_batch(self.batch_size)):
             return
         state_batch, act_batch, rew_batch, nstate_batch, d_batch = self.replay_buffer.get_batch(self.batch_size)
-        state_batch = torch.from_numpy(state_batch).type(tensorType)
+        state_batch = torch.from_numpy(state_batch)
         act_batch = torch.from_numpy(act_batch).long()
         rew_batch = torch.from_numpy(rew_batch).view(self.batch_size, 1)
-        nstate_batch = torch.from_numpy(nstate_batch).type(tensorType)
-        d_batch = torch.from_numpy(1 - d_batch).type(torch.Tensor).type(tensorType).view(self.batch_size, 1)
+        nstate_batch = torch.from_numpy(nstate_batch)
+        d_batch = torch.from_numpy(1 - d_batch).type(torch.Tensor).view(self.batch_size, 1)
 
         q_values = self.model(state_batch)
 
@@ -186,8 +181,12 @@ class DQNAgent():
         self.counter = 0
 
     def save_params(self):
-        logging.info("Saving model params to ./saved_params_" + self.name)
-        torch.save(self.target_model, "./saved_params_" + self.name)
+        try:
+            logging.info("Saving model params to ./saved_params_" + self.name)
+            torch.save(self.model, "./saved_params_" + self.name)
+            torch.save(self.target_model, "./target_saved_params_" + self.name)
+        except Exception as e:
+            logging.critical("Error: " + str(e))
 
     def load_params(self):
         try:

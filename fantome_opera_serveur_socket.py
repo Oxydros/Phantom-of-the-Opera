@@ -222,7 +222,7 @@ init_connexion()
 
 for i in range(100000):
     scores.append(partie(joueurs).lancer())
-    if i % 1000 == 0:
+    if i % 100 == 0:
         print('-------------')
         last_scores = scores[-1000:]
         win_d = [win for win in last_scores if win > 0]
