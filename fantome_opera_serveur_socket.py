@@ -1,3 +1,5 @@
+!#/usr/bin/env python
+
 from random import shuffle,randrange
 from time import sleep
 from threading import Thread

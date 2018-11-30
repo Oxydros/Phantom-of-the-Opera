@@ -1,3 +1,5 @@
+!#/usr/bin/env python
+
 import runnerSocket
 from Parsing import PLAYER_TYPE
 
