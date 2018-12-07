@@ -220,7 +220,7 @@ def init_connexion():
 
 init_connexion()
 
-for i in range(100000):
+for i in range(5000):
     scores.append(partie(joueurs).lancer())
     if i % 100 == 0:
         print('-------------')

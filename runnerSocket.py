@@ -133,7 +133,7 @@ class GameRunner(object):
 				self.processQuestions(parser, world, msg, gameAgent)
 		return "Unknown"
 
-def lancer(agentType, smart=True):
+def lancer(agentType, smart=True, training=False):
 	gameAgent = None
 	try:
 		logging.info("Launching %s IA"%(agentType))
@@ -142,7 +142,7 @@ def lancer(agentType, smart=True):
 		parser.initNetwork()
 		logging.info("Done!")
 		if smart:
-			gameAgent = SmartGameAgent(agentType)
+			gameAgent = SmartGameAgent(agentType, training=training)
 		else:
 			gameAgent = GameAgent()
 		runner = GameRunner()

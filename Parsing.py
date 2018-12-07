@@ -19,7 +19,6 @@ class Parser :
         self.responsesPath = './1/reponses.txt'
         self.questionsPath = './1/questions.txt'
         self.infoPath = './1/infos.txt'
-        self.getGhost()
       else :
         self.responsesPath = './0/reponses.txt'
         self.questionsPath = './0/questions.txt'

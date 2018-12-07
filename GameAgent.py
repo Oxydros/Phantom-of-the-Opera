@@ -54,13 +54,13 @@ class GameAgent():
 class SmartGameAgent(GameAgent):
     agentType = None
 
-    def __init__(self, agentType):
+    def __init__(self, agentType, training = True):
         self.agentType = agentType
         agentStr = "ghost" if self.agentType == PLAYER_TYPE.GHOST else "detective"
         if self.agentType == PLAYER_TYPE.GHOST:
-            self.agent = DQNAgent(23, 20, name=agentStr)
+            self.agent = DQNAgent(23, 20, name=agentStr, training=training)
         else:
-            self.agent = DQNAgent(22, 20, name=agentStr)
+            self.agent = DQNAgent(22, 20, name=agentStr, training=training)
 
     def getAgentType(self):
         return self.agentType

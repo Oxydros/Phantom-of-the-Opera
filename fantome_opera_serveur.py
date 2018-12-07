@@ -2,7 +2,7 @@ from random import shuffle,randrange
 from time import sleep
 from threading import Thread
 import runner
-from ia_fopera import dummy0, dummy1
+import dummy0, dummy1
 
 latence = 2
 permanents, deux, avant, apres = {'rose'}, {'rouge','gris','bleu'}, {'violet','marron'}, {'noir','blanc'}
@@ -187,7 +187,7 @@ class partie:
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
 
 joueurs = [joueur(0),joueur(1)]
-t1 = Thread(target=runner.lancer)
+t1 = Thread(target=dummy0.lancer)
 t2 = Thread(target=dummy1.lancer)
 
 t1.daemon = True

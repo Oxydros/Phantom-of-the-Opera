@@ -9,18 +9,18 @@ import logging
 from Net import DQN
 from ReplayBuffer import ReplayBuffer
 
-LEARNING_RATE = 0.000025
+LEARNING_RATE = 0.001
 ALPHA = 0.95
 EPS = 0.01
 REPLAY_SIZE = 1000000
 GAMMA = 0.99
-UPDATE_FREQ = 300
-START_LEARNING = 30000
-LEARNING_FREQ = 12
+UPDATE_FREQ = 30
+START_LEARNING = 0
+LEARNING_FREQ = 5
 
 class DQNAgent():
     def __init__(self, input_size,
-                output_size, name = "NoName", batch_size = 32):
+                output_size, name = "NoName", batch_size = 32, training = True):
         self.name = name
 
         self.input_size = input_size
@@ -49,18 +49,21 @@ class DQNAgent():
         self.last_data = None
         self.scheduled_data = []
 
+        self.training = training
+
     ##Return the threshold for the e-greedy algorithm
     ##depending on the current step of the learning
     def get_epsilon_threshold(self, step):
-        fraction  = min(float(step) / 1000000, 1.0)
+        return 0.05
+        fraction  = min(float(step) / 30000, 1.0)
         return 1.0 + fraction * (0.1 - 1.0)
 
     ##Epsilon greddy selection
     ##Explore using random, or exploit the model
     def select_epsilon_greedy(self, state, step):
         rand = random.random()
-        epsilon_threashold = self.get_epsilon_threshold(step)
-        if step > START_LEARNING and rand > epsilon_threashold:
+        epsilon_threashold = self.get_epsilon_threshold(step) if self.training else 0.05
+        if (step > START_LEARNING or self.training == False) and rand > epsilon_threashold:
             logging.debug("[IA] Taking model advice")
             tensor = torch.Tensor([state])
             return self.model(tensor)
@@ -193,8 +196,8 @@ class DQNAgent():
             logging.info("Fetching previous trained model")
             self.model = torch.load("./saved_params_" + self.name)
             logging.info("Previous model loaded with success. Weights:")
-            for param in self.model.parameters():
-                logging.info(param.data)
+            # for param in self.model.parameters():
+            #     logging.info(param.data)
         except:
             logging.info("Couldn't load model. Starting from scratch")
 
