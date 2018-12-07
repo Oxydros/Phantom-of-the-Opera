@@ -63,6 +63,22 @@ class Parser :
                 return parser.parsePower(question)
             elif (question.find('positions') != -1) :
                   return parser.parsePosition(question)
+            elif (question.find('obscurcir') != -1) :
+                  questionParsed = {
+                        "QuestionType" : QUESTION_TYPE.GREY,
+                  }
+                  return questionParsed
+            elif (question.find('échanger') != -1) :
+                  questionParsed = {
+                        "QuestionType" : QUESTION_TYPE.VIOLET,
+                  }
+                  return questionParsed
+            elif (question.find("bloquer") != - 1 or question.find("sortie") != - 1) :
+                  questionParsed = {
+                        "QuestionType" : QUESTION_TYPE.BLUE,
+                        "Data": question
+                  }
+                  return questionParsed
             else :
                   return { "QuestionType" : QUESTION_TYPE.ERROR,
                         "Data" : "Unknow Question"}

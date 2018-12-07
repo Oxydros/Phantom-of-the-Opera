@@ -9,6 +9,9 @@ class QUESTION_TYPE(Enum):
       TUILES = 1
       POWER = 2
       MOVE = 3
+      GREY = 4
+      VIOLET = 5
+      BLUE = 6
 
 class INFO_STATUS(Enum):
       ERROR = 0

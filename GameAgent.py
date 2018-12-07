@@ -1,5 +1,8 @@
 import logging
 import sys
+from AlphaBetaDetective import AlphaBetaDetective
+from AlphaBetaFantome import AlphaBetaFantome
+from Parsing import PLAYER_TYPE
 
 class GameAgent():
 
@@ -16,30 +19,51 @@ class GameAgent():
         self.world = world
         self.agentType = agentType
 
+    def bluePower(self, node, data) :
+        if (data.find("bloquer") != - 1) :
+            return (str(node.power[0]))
+        return (str(node.power[1]))
+
+    def violetPower(self, node) :
+        return node.power
+
+    def greyPower(self, node) :
+        return(node.power)
+
     def getAgentType(self):
         return self.agentType
 
     ## Return the best tuile selection
-    def selectTuile(self, tuiles):
-        self.powerQ = 0
+    def selectTuile(self, root):
         logging.info("[IA] Trying to find best tuile")
-        self.actualTuile = tuiles[0]
-        self.actualPos = tuiles[0]['pos']
-        self.actualColor = tuiles[0]['color']
-
-        # IA HERE
-        # MUST SET selectedPower and selectedPos
-        # MUST RET TUILE COLOR
-
-        return "0"
+        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome(root)
+        else :
+            alphaB = AlphaBetaDetective(root)
+        node = alphaB.alpha_beta_search(root);
+        nbAnswer = node.parent.color.index(node.sColor)
+        return str(nbAnswer), node 
 
     ## Return the best next pos
-    def nextPos(self, available_pos):
-        logging.info("[IA] selected POSITION %s"%(self.selectedPos))
-        return str(self.selectedPos)
+    def nextPos(self, root):
+        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome(root)
+        else :
+            alphaB = AlphaBetaDetective(root)
+        node = alphaB.alpha_beta_search(root)
+        if (node.move == '') :
+            node = alphaB.alpha_beta_search(root)
+        logging.info("[IA] selected POSITION %s"%(node.move))
+        return str(node.move), node
 
     ## Return the best power choice
-    def powerChoice(self):
-        logging.info("[IA] Use power %d"%(self.selectedPower[self.powerQ]))
-        self.powerQ += 1
-        return str(0)
+    def powerChoice(self, root):
+        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome(root)
+        else :
+            alphaB = AlphaBetaDetective(root)
+        alphaB = AlphaBetaDetective(root)
+        node = alphaB.alpha_beta_search(root)
+        if (node.used == True and node.parent.used == False) :
+            return str(1), node
+        return str(0), node

@@ -5,6 +5,8 @@ from AgentTypes import PLAYER_TYPE, QUESTION_TYPE, INFO_STATUS
 from ParsingSocket import Parser
 from World import World
 import time
+from AlphaBetaDetective import AlphaBetaDetective
+from AlphaBetaFantome import AlphaBetaFantome
 from threading import Thread
 
 root = logging.getLogger()
@@ -41,17 +43,23 @@ def loop(world, parser, d):
             questionData = parser.parseQuestion(msg.content)
             world.updateState(questionData)
             answer = ""
-            print(questionData["QuestionType"], " ", QUESTION_TYPE.TUILES)
             if questionData["QuestionType"] == QUESTION_TYPE.MOVE:
-                logging.info("Got question %s"%(questionData))
-                answer = d.nextPos(questionData["Data"])
+                answer, node = d.nextPos(node)
             elif questionData["QuestionType"] == QUESTION_TYPE.POWER:
                 logging.info("Got question %s"%(questionData))
-                answer = d.powerChoice()
+                answer, node = d.powerChoice(node)
             elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
-                print("OUI")
+                node = world.getNode()
+                node = world.getColor(node, questionData["Data"])
+                tree = world.getTree(node)
                 logging.info("Got question %s"%(questionData))
-                answer = d.selectTuile(questionData["Data"])
+                answer, node = d.selectTuile(tree)
+            elif questionData["QuestionType"] == QUESTION_TYPE.GREY:
+                answer = d.greyPower(node)
+            elif questionData["QuestionType"] == QUESTION_TYPE.VIOLET:
+                answer = d.violetPower(node)
+            elif questionData["QuestionType"] == QUESTION_TYPE.BLUE:
+                answer = d.bluePower(node, questionData["Data"])
             parser.sendMsg(answer) 
     return "Unknown"   
 

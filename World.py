@@ -1,5 +1,7 @@
 import logging
 import random
+from GameNode import GameNode
+from GameTree import GameTree
 from Parsing import QUESTION_TYPE
 
 # -- GAME Constants --
@@ -53,6 +55,8 @@ class World:
     score = 0
     tour = 0
     status = {}
+    pos = []
+    gameTree = GameTree()
 
     def __init__(self, *args, **kwargs):
         pass
@@ -153,6 +157,7 @@ class World:
         print("Cleaned: %s"%(self.innocent_colors))
         for id_room, room in enumerate(self.game_map):
             print("Room %d: %s"%(id_room, room))
+        print(self.pos)
         print("---------------")
     
     ## Set the score of the current game
@@ -172,15 +177,42 @@ class World:
     def getTour(self):
         return self.tour
 
+    def getNode(self):
+        return GameNode(self.pos, [], "", self.score, False)
+
+    def getColor(self, node , infos) :
+        for elem in infos :
+            node.color.append(elem["color"]);
+        return node;
+
+    def getTree(self, node) :
+        return (self.gameTree.doGameTree(node))
+
+    def setPos(self, status, Tuiles) :
+        for elem in Tuiles :
+            tab = [elem['color'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+            tab[elem['pos'] + 1] = 1
+            if (elem['state'] != 'suspect') :
+                tab[11] = 0
+            self.pos.append(tab)
+        tab = ['light', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        tab[status['Ombre'] + 1] = 1;
+        self.pos.append(tab)
+        tabLock = ['lock', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        tabLock[list(status['Lock'])[0] + 1] = 1
+        tabLock[list(status['Lock'])[1] + 1] = 1
+        self.pos.append(tabLock)
     ## Set the current status of the game
     ## Fetch by the Parser in infos.txt
     def setStatus(self, status):
+        self.pos = []
         self.status = status
         self.updateTuiles(status["Tuiles"])
         self.setBlackRoom(status["Ombre"])
         self.setBlockedPath(status["Lock"])
         self.setScore(status['Score'])
         self.setTour(status['Tour'])
+        self.setPos(status, status['Tuiles'])
 
     ## Get the current status of the game
     ## Fetch by the Parser in infos.txt
@@ -198,16 +230,22 @@ class World:
     
     ## Update local tuiles infos
     def updateTuiles(self, tuilesInfos):
-        #For each tuiles
-        for t in tuilesInfos:
-            color = t['color']
-            pos = t['pos']
-            state = t['state']
-            #Update the position
-            self.setColorPosition(color, pos)
-            #Update the state
-            if state == 'clean':
-                self.setInnocentColor(color)
+        for line in self.pos :
+            for elem in tuilesInfos :
+                if (line[0] == elem['color']) :
+                    line[1] = 0
+                    line[2] = 0
+                    line[3] = 0
+                    line[4] = 0
+                    line[5] = 0
+                    line[6] = 0
+                    line[7] = 0
+                    line[8] = 0
+                    line[9] = 0
+                    line[10] = 0
+                    line[elem['pos'] + 1] = 1
+                    if (elem['state'] != 'suspect') :
+                        line[11] = 0
 
 if __name__ == "__main__":
     #Test the World class

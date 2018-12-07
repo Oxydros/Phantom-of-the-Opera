@@ -210,7 +210,7 @@ def init_connexion():
 
 init_connexion()
 
-for i in range(50):
+for i in range(100):
     scores.append(partie(joueurs).lancer())
     print("partie : " + str(i))
     informer("ResetGame")
