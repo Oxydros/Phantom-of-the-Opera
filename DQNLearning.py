@@ -184,6 +184,8 @@ class DQNAgent():
         self.counter = 0
 
     def save_params(self):
+        if self.training == False:
+            return
         try:
             logging.info("Saving model params to ./saved_params_" + self.name)
             torch.save(self.model, "./saved_params_" + self.name)
