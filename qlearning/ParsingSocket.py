@@ -1,10 +1,10 @@
 import re
 import socket
 import logging
-import protocol
-import messages
-import Parsing
-from AgentTypes import PLAYER_TYPE, QUESTION_TYPE, INFO_STATUS
+from . import protocol
+from . import messages
+from . import Parsing
+from . import AgentTypes
 
 class Parser :
       
@@ -41,7 +41,7 @@ class Parser :
                   regex = re.search(r'(\d*), (\d*)', lastInfoTourFound[3])
                   lock = {int(regex.group(1)), int(regex.group(2))}
                   infoTour =	{
-                        "InfoStatus": INFO_STATUS.OK,
+                        "InfoStatus": AgentTypes.INFO_STATUS.OK,
                         "Tour": int(lastInfoTourFound[0]),
                         "Score": int(lastInfoTourFound[1]),
                         "Ombre": int(lastInfoTourFound[2]),
@@ -52,14 +52,14 @@ class Parser :
             ghost = re.findall(r'!!! Le fantôme est : (.*)', data)
             if len(ghost) > 0:
                   return {
-                        "InfoStatus" : INFO_STATUS.GHOST,
+                        "InfoStatus" : AgentTypes.INFO_STATUS.GHOST,
                         "Data" : ghost[0]
                   }
             infosSuspect = re.findall(r'(.*) a été tiré', data)
             if len(infosSuspect) > 0:
                   if infosSuspect[0] == "fantome":
                         return {
-                              "InfoStatus" : INFO_STATUS.DRAW_GHOST
+                              "InfoStatus" : AgentTypes.INFO_STATUS.DRAW_GHOST
                         }
                   tuileInfo = infosSuspect[0].split('-')
                   tuile = {
@@ -68,13 +68,13 @@ class Parser :
                         'state' : tuileInfo[2]
                   }
                   return {
-                        "InfoStatus" : INFO_STATUS.SUSPECT,
+                        "InfoStatus" : AgentTypes.INFO_STATUS.SUSPECT,
                         "Data": tuile
                   }
             agentTurn = re.findall(r'Tour de (.*)', data)
             if len(agentTurn) > 0:
                   return {
-                        "InfoStatus" : INFO_STATUS.CHANGE_HAND,
+                        "InfoStatus" : AgentTypes.INFO_STATUS.CHANGE_HAND,
                         "Data": agentTurn[0]
                   }
             newPlacement = re.findall(r'NOUVEAU PLACEMENT : (.*)', data)
@@ -86,18 +86,18 @@ class Parser :
                         'state' : tuileInfo[2]
                   }]
                   return {
-                        "InfoStatus" : INFO_STATUS.PLACEMENT,
+                        "InfoStatus" : AgentTypes.INFO_STATUS.PLACEMENT,
                         "Data": tuile
                   }
             finalScore = re.findall(r'Score final : (.*)', data)
             if len(finalScore) > 0:
                   return {
-                        "InfoStatus" : INFO_STATUS.FINAL_SCORE,
+                        "InfoStatus" : AgentTypes.INFO_STATUS.FINAL_SCORE,
                         "Data": int(finalScore[0])
                   }
             logging.debug("COULDN'T PARSE!")
             return {
-                  "InfoStatus" : INFO_STATUS.ERROR,
+                  "InfoStatus" : AgentTypes.INFO_STATUS.ERROR,
                   "Data" : 'Nothing Change'
             }
 

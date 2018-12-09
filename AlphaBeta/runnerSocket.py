@@ -1,13 +1,9 @@
 import logging
 import sys
-from GameAgent import GameAgent
-from AgentTypes import PLAYER_TYPE, QUESTION_TYPE, INFO_STATUS
-from ParsingSocket import Parser
-from World import World
-import time
-from AlphaBetaDetective import AlphaBetaDetective
-from AlphaBetaFantome import AlphaBetaFantome
-from threading import Thread
+from . import GameAgent
+from . import AgentTypes
+from . import ParsingSocket
+from . import World
 
 root = logging.getLogger()
 root.setLevel(logging.DEBUG)
@@ -19,10 +15,10 @@ ch.setFormatter(formatter)
 root.addHandler(ch)
 
 def updateInfos(world, infoData):
-    if infoData['InfoStatus'] == INFO_STATUS.OK:
+    if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.OK:
         logging.info("Got info tour %s"%(infoData))
         world.setStatus(infoData)
-    elif infoData['InfoStatus'] == INFO_STATUS.PLACEMENT:
+    elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.PLACEMENT:
         logging.info("Got info tour %s"%(infoData))
         world.updateTuiles(infoData['Data'])
 
@@ -36,42 +32,42 @@ def loop(world, parser, d):
             if msg.content == "ResetGame" or msg.content == "EndGame":
                 return msg.content
             infoData = parser.parseInfo(msg.content)
-            if infoData['InfoStatus'] == INFO_STATUS.END:
+            if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.END:
                 break
             updateInfos(world, infoData)
         elif msgType == "Question":
             questionData = parser.parseQuestion(msg.content)
             world.updateState(questionData)
             answer = ""
-            if questionData["QuestionType"] == QUESTION_TYPE.MOVE:
+            if questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.MOVE:
                 answer, node = d.nextPos(node)
-            elif questionData["QuestionType"] == QUESTION_TYPE.POWER:
+            elif questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.POWER:
                 logging.info("Got question %s"%(questionData))
                 answer, node = d.powerChoice(node)
-            elif questionData["QuestionType"] == QUESTION_TYPE.TUILES:
+            elif questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.TUILES:
                 node = world.getNode()
                 node = world.getColor(node, questionData["Data"])
                 tree = world.getTree(node)
                 logging.info("Got question %s"%(questionData))
                 answer, node = d.selectTuile(tree)
-            elif questionData["QuestionType"] == QUESTION_TYPE.GREY:
+            elif questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.GREY:
                 answer = d.greyPower(node)
-            elif questionData["QuestionType"] == QUESTION_TYPE.VIOLET:
+            elif questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.VIOLET:
                 answer = d.violetPower(node)
-            elif questionData["QuestionType"] == QUESTION_TYPE.BLUE:
+            elif questionData["QuestionType"] == AgentTypes.QUESTION_TYPE.BLUE:
                 answer = d.bluePower(node, questionData["Data"])
             parser.sendMsg(answer) 
     return "Unknown"   
 
 def lancer(agentType):
     logging.info("Launching %s IA"%(agentType))
-    parser = Parser(agentType)
+    parser = ParsingSocket.Parser(agentType)
     logging.info("Init network...")
     parser.initNetwork()
     logging.info("Done!")
     while True:
-        world = World()
-        d = GameAgent(world, agentType)
+        world = World.World()
+        d = GameAgent.GameAgent(world, agentType)
         result = loop(world, parser, d)        
         logging.info("Got result from game %s"%(result))
         if result == "EndGame":

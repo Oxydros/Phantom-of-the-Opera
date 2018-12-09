@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.autograd as autograd
+import sys
+import os
 
 import random
 import logging
@@ -129,6 +131,8 @@ class DQNAgent():
 
     #CF Algorithm 1 from paper http://web.stanford.edu/class/psych209/Readings/MnihEtAlHassibis15NatureControlDeepRL.pdf
     def train(self):
+        if self.training == False:
+            return
         ##Train every 4 steps and if bath size is OK
         if not (self.counter > START_LEARNING and
                 self.counter % LEARNING_FREQ == 0 and
@@ -188,20 +192,22 @@ class DQNAgent():
             return
         try:
             logging.info("Saving model params to ./saved_params_" + self.name)
-            torch.save(self.model, "./saved_params_" + self.name)
-            torch.save(self.target_model, "./target_saved_params_" + self.name)
+            torch.save(self.model, "./qlearning/saved_params_" + self.name)
+            torch.save(self.target_model, "./qlearning/target_saved_params_" + self.name)
         except Exception as e:
             logging.critical("Error: " + str(e))
 
     def load_params(self):
         try:
+            print(os.getcwd())
             logging.info("Fetching previous trained model")
-            self.model = torch.load("./saved_params_" + self.name)
+            self.model = torch.load(os.getcwd() + "./qlearning/saved_params_" + self.name)
             logging.info("Previous model loaded with success. Weights:")
             # for param in self.model.parameters():
             #     logging.info(param.data)
-        except:
+        except Exception as e:
             logging.info("Couldn't load model. Starting from scratch")
+            logging.error(e)
 
     def __del__(self):
         self.save_params()

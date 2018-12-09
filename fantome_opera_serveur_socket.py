@@ -4,8 +4,8 @@ from random import shuffle,randrange
 from time import sleep
 from threading import Thread
 import socket
-import protocol
-import messages
+from qlearning import protocol
+from qlearning import messages
 
 ##Linux
 # link = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -220,22 +220,17 @@ def init_connexion():
 
 init_connexion()
 
-<<<<<<< HEAD
-for i in range(100):
-=======
-for i in range(5000):
->>>>>>> d7a201371aac3091b0b2fa1cb4e5268a90ecaaf0
+for i in range(50):
     scores.append(partie(joueurs).lancer())
-    if i % 100 == 0:
-        print('-------------')
-        last_scores = scores[-1000:]
-        win_d = [win for win in last_scores if win > 0]
-        win_g = [win for win in last_scores if win <= 0]
-        print("partie played : " + str(i))
-        print("Detective won %d times in the last %d games"%(len(win_d), len(last_scores)))
-        print("Ghost won %d times in the last %d games"%(len(win_g), len(last_scores)))
-        print ("winrate last 1000: " + str(len([win for win in last_scores if win <= 0]) / len(last_scores) * 100))
-        print('-------------')
+    print('-------------')
+    last_scores = scores[-1000:]
+    win_d = [win for win in last_scores if win > 0]
+    win_g = [win for win in last_scores if win <= 0]
+    print("partie played : " + str(i))
+    print("Detective won %d times in the last %d games"%(len(win_d), len(last_scores)))
+    print("Ghost won %d times in the last %d games"%(len(win_g), len(last_scores)))
+    print ("winrate last 1000: " + str(len([win for win in last_scores if win <= 0]) / len(last_scores) * 100))
+    print('-------------')
     informer("ResetGame")
 
 informer("EndGame")

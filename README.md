@@ -1,11 +1,11 @@
 # IA_Fantom_of_The_Opera
 
-## Reinforcement learning using QLearning
-
-### 2 Agents
+## 2 Agents
 
 * Fantom
 * Detective
+
+## Alpha beta
 
 ### 3 questions to answer to
 
@@ -33,27 +33,8 @@ We can find different type of informations, defining the state:
 | E1 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
 | E2 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
 
-## Realisation
-
-* 1 neural network for each question
-* Reward is calculated at the end of the "half turn" and propagated back to the 3 neural net
-
-### Neural Net E0
-
-* Size of entry 107  
-* Size of exit 8 (colors)
-
-### Neural Net E1
-
-* Size of entry 105  
-* Size of exit 2 (yes or no)
-
-### Neural Net E2
-
-* Size of entry 105  
-* Size of exit 9 (9 rooms)
-
-## V2 data
+## Reinforcement learning using Deep QLearning
+## Data
 
 Nous considérons chaque action du jeu comme un bouton sur un controleur.  
 L'agent va apprendre qu'en fonction de certains état du jeu des boutons sont plus  
@@ -105,6 +86,5 @@ Nous pouvons remarquer 3 différentes façon d'obtenir cet état **S+1(q)**:
 * Lors du début d'un nouveau tour.
 
 ## Links
-
 https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 

@@ -18,11 +18,12 @@ def lancer(agentType):
     root.addHandler(ch)
     print("Launching %s"%(hand_name[agentType]))
     world = World.World()
-    parser = Parsing.Parser(AgentTypes.PLAYER_TYPE.DETECTIVE)
+    parser = Parsing.Parser(agentType)
     d = GameAgent.GameAgent(world, agentType)
     while (not world.isGameEnded()):
         infos = parser.readInfo()
         # time.sleep(1)
+
         if infos['InfoStatus'] == AgentTypes.INFO_STATUS.OK:
                 logging.info("Got info tour %s"%(infos))
                 world.setStatus(infos)
