@@ -16,6 +16,7 @@ class Parser :
             self.link.connect(('127.0.0.1', 4242))
       
       def readMsg(self):
+            print('oui')
             r = protocol.recv_one_message(self.link)
             r = messages.deserialize(r)
             return r

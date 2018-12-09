@@ -18,3 +18,8 @@ class INFO_STATUS(IntEnum):
       OK = 1
       PLACEMENT = 2
       END = 3
+      GHOST = 4
+      SUSPECT = 5
+      CHANGE_HAND = 6
+      DRAW_GHOST = 7
+      FINAL_SCORE = 8

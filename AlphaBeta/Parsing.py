@@ -19,7 +19,6 @@ class Parser :
         self.responsesPath = './1/reponses.txt'
         self.questionsPath = './1/questions.txt'
         self.infoPath = './1/infos.txt'
-        self.getGhost()
       else :
         self.responsesPath = './0/reponses.txt'
         self.questionsPath = './0/questions.txt'
@@ -58,7 +57,7 @@ class Parser :
         if (listLastPlacement != self.oldLastPlacement) :
           self.oldLastPlacement = listLastPlacement
           return {
-            "InfoStatus" : AgentTypes.INFO_STATUS.PLACEMENT,
+            "InfoStatus" :  AgentTypes.INFO_STATUS.PLACEMENT,
             "Data" : listLastPlacement,
           }
         return {
@@ -130,11 +129,26 @@ class Parser :
       if (regex) :
         positionsAvailable = regex.group(1).replace(' ', '')
         listPositionsAvailable = positionsAvailable.split(',')
-        questionParsed = {
+        find_color = re.search(r"(.*), positions", question)
+        color = None
+        if find_color:
+              color = find_color.group(0).split(',')[0]
+              tuileInfo = color.split('-');
+              color = {
+                'color': tuileInfo[0],
+                'pos': int(tuileInfo[1]),
+                'state' : tuileInfo[2]
+              }
+              return {
+                "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLANC,
+                "Data" : listPositionsAvailable,
+                "Color" : color
+              }
+        return {
           "QuestionType" : AgentTypes.QUESTION_TYPE.MOVE,
           "Data" : listPositionsAvailable,
+          "Color" : color
         }
-        return questionParsed
       return {
         "QuestionType": AgentTypes.QUESTION_TYPE.ERROR,
         "Data" : regex
@@ -149,6 +163,22 @@ class Parser :
       }
       return questionParsed
 
+    def parseBluePosition(self, question):
+          regex = re.search(r'{(.*)}', question)
+          if (regex) :
+                positionsAvailable = regex.group(1).replace(' ', '')
+                listPositionsAvailable = positionsAvailable.split(',')
+                questionParsed = {
+                  "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLEU,
+                  "Data" : listPositionsAvailable,
+                }
+                return questionParsed
+          return {
+              "QuestionType": AgentTypes.QUESTION_TYPE.ERROR,
+              "Data" : regex
+            }
+
+
 ## call the parsing function who match the question
 ## if forest tmp, just to test
     def findQuestion(self, question) :
@@ -158,6 +188,23 @@ class Parser :
         return self.parsePower(question)
       elif (question.find('positions') != -1) :
         return self.parsePosition(question)
+      elif (question.find("Avec quelle couleur échanger (pas violet!) ?") != -1):
+        return {
+          "QuestionType" : AgentTypes.QUESTION_TYPE.P_VIOLET,
+          "Data" : None
+        }
+      elif (question.find("Quelle salle obscurcir ?") != -1):
+        return {
+                  "QuestionType" : AgentTypes.QUESTION_TYPE.P_GRIS,
+                  "Data" : None
+              }
+      elif (question.find("Quelle salle bloquer ?") != -1):
+        return {
+          "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLEU,
+          "Data": None
+        }
+      elif (question.find("Quelle sortie ?") != -1):
+        return self.parseBluePosition(question)
       else :
         return { "QuestionType" : AgentTypes.QUESTION_TYPE.ERROR,
                 "Data" : "Unknow Question"}
