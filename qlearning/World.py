@@ -1,6 +1,6 @@
 import logging
 import random
-from AgentTypes import QUESTION_TYPE, PLAYER_TYPE
+from . import AgentTypes
 
 # -- GAME Constants --
 MAP_SIZE = 10
@@ -176,7 +176,7 @@ class World:
     def printMap(self, gameState = None):
         logging.debug("---- GAME MAP ----")
         if gameState != None:
-            logging.debug("Called for STATE: %s ==> %d"%(QUESTION_TYPE(gameState),
+            logging.debug("Called for STATE: %s ==> %d"%(AgentTypes.QUESTION_TYPE(gameState),
                             gameState))
         logging.debug("Tour is %d and score is %d"%(self.tour, self.score))
         logging.debug("Ghost is %s"%(self.ghost_color))
@@ -226,11 +226,11 @@ class World:
 
     ## Update the state of the world depending on the questions
     def updateState(self, questionInfos):
-        if questionInfos["QuestionType"] == QUESTION_TYPE.MOVE:
+        if questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.MOVE:
             pass
-        elif questionInfos["QuestionType"] == QUESTION_TYPE.POWER:
+        elif questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.POWER:
             pass
-        elif questionInfos["QuestionType"] == QUESTION_TYPE.TUILES:
+        elif questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.TUILES:
             self.updateTuiles(questionInfos["Data"])
     
     ## Update local tuiles infos
@@ -285,7 +285,7 @@ class World:
         logging.debug("Current color: %d"%(COLOR_INTEG[self.current_color] if self.current_color != "none" else -1))
         data.append(gameState)
         logging.debug("Current gameState: %d"%(gameState))
-        if (agentType == PLAYER_TYPE.GHOST):
+        if (agentType == AgentTypes.PLAYER_TYPE.GHOST):
             data.append(COLOR_INTEG[self.ghost_color])
         logging.debug("--QLearningData END--")
         self.printMap(gameState)

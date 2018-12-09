@@ -6,8 +6,8 @@ import torch.autograd as autograd
 
 import random
 import logging
-from Net import DQN
-from ReplayBuffer import ReplayBuffer
+from . import Net
+from . import ReplayBuffer
 
 LEARNING_RATE = 0.001
 ALPHA = 0.95
@@ -27,10 +27,10 @@ class DQNAgent():
         self.output_size = output_size
         
         ##DQN network
-        self.model = DQN(input_size, output_size)
+        self.model = Net.DQN(input_size, output_size)
         self.load_params()
 
-        self.target_model = DQN(input_size, output_size)
+        self.target_model = Net.DQN(input_size, output_size)
         self.target_model.load_state_dict(self.model.state_dict())
 
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=LEARNING_RATE,
@@ -40,7 +40,7 @@ class DQNAgent():
 
         #Trainin vars
         self.batch_size = batch_size
-        self.replay_buffer = ReplayBuffer(REPLAY_SIZE, self.input_size)
+        self.replay_buffer = ReplayBuffer.ReplayBuffer(REPLAY_SIZE, self.input_size)
 
         ##Used for e-greedy policy
         self.counter = -1

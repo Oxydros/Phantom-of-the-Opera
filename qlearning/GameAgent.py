@@ -1,8 +1,8 @@
 import logging
 import sys
-from DQNLearning import DQNAgent
-from AgentTypes import QUESTION_TYPE, PLAYER_TYPE
-from World import COLOR_INTEG, INTEG_COLOR
+from . import DQNLearning
+from . import AgentTypes
+from . import World
 
 def extractColorSelection(tensor):
     return tensor[:8]
@@ -56,11 +56,11 @@ class SmartGameAgent(GameAgent):
 
     def __init__(self, agentType, training = True):
         self.agentType = agentType
-        agentStr = "ghost" if self.agentType == PLAYER_TYPE.GHOST else "detective"
-        if self.agentType == PLAYER_TYPE.GHOST:
-            self.agent = DQNAgent(23, 20, name=agentStr, training=training)
+        agentStr = "ghost" if self.agentType == AgentTypes.PLAYER_TYPE.GHOST else "detective"
+        if self.agentType == AgentTypes.PLAYER_TYPE.GHOST:
+            self.agent = DQNLearning.DQNAgent(23, 20, name=agentStr, training=training)
         else:
-            self.agent = DQNAgent(22, 20, name=agentStr, training=training)
+            self.agent = DQNLearning.DQNAgent(22, 20, name=agentStr, training=training)
 
     def getAgentType(self):
         return self.agentType
@@ -102,7 +102,7 @@ class SmartGameAgent(GameAgent):
     def nextCurrentColorPos(self, world, available_pos):
         possible_positions = [int(p) for p in available_pos]
 
-        gameState = QUESTION_TYPE.MOVE
+        gameState = AgentTypes.QUESTION_TYPE.MOVE
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
@@ -121,7 +121,7 @@ class SmartGameAgent(GameAgent):
         saved_color = world.getCurrentPlayedColor()
         world.setCurrentPlayedColor(target_color['color'])
 
-        gameState = QUESTION_TYPE.P_BLANC
+        gameState = AgentTypes.QUESTION_TYPE.P_BLANC
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
@@ -143,7 +143,7 @@ class SmartGameAgent(GameAgent):
         else:
             possible_positions = [i for i in range(10)]
 
-        gameState = QUESTION_TYPE.P_BLEU
+        gameState = AgentTypes.QUESTION_TYPE.P_BLEU
 
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
 
@@ -159,7 +159,7 @@ class SmartGameAgent(GameAgent):
     def nextPosBlackRoom(self, world):
         logging.debug("[IA] Trying to find best new BLACK TOKEN pos")
 
-        gameState = QUESTION_TYPE.P_GRIS
+        gameState = AgentTypes.QUESTION_TYPE.P_GRIS
 
         possible_positions = range(0, 9)
         best_id_rep, best_id_data, _ = self._selectPosition(world, gameState, possible_positions)
@@ -173,11 +173,11 @@ class SmartGameAgent(GameAgent):
 
     ## Return the best tuile selection
     def selectTuile(self, world, tuiles):
-        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(QUESTION_TYPE.TUILES))
+        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(AgentTypes.QUESTION_TYPE.TUILES))
 
-        possible_tuiles = [COLOR_INTEG[d['color']] for d in tuiles ]
+        possible_tuiles = [World.COLOR_INTEG[d['color']] for d in tuiles ]
 
-        gameState = QUESTION_TYPE.TUILES.value
+        gameState = AgentTypes.QUESTION_TYPE.TUILES.value
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
         logging.debug("[IA] Got result from DQN: %s"%(data))
@@ -188,20 +188,20 @@ class SmartGameAgent(GameAgent):
         self.agent.action_taken(idata, best_id_data)
 
         #Setting up current color in world state
-        world.setCurrentPlayedColor(INTEG_COLOR[best_id_data])
+        world.setCurrentPlayedColor(World.INTEG_COLOR[best_id_data])
 
-        logging.debug("Selecting tuile %s"%(INTEG_COLOR[best_id_data]))
+        logging.debug("Selecting tuile %s"%(World.INTEG_COLOR[best_id_data]))
         return str(best_id_rep)
 
     ## Return the best tuile selection
     def selectTuileVioletPower(self, world):
-        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(QUESTION_TYPE.P_VIOLET))
+        logging.debug("[IA][GameState=%s] Trying to find best tuile"%(AgentTypes.QUESTION_TYPE.P_VIOLET))
 
         # If power is activated, agent can choose from every color except violet
         possible_tuiles = [i for i in range(8)]
-        possible_tuiles.remove(COLOR_INTEG['violet'])
+        possible_tuiles.remove(World.COLOR_INTEG['violet'])
 
-        gameState = QUESTION_TYPE.P_VIOLET.value
+        gameState = AgentTypes.QUESTION_TYPE.P_VIOLET.value
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
         logging.debug("[IA] Got result from DQN: %s"%(data))
@@ -211,14 +211,14 @@ class SmartGameAgent(GameAgent):
         
         self.agent.action_taken(idata, best_id_data)
 
-        logging.debug("Selecting tuile for VIOLET POWER %s"%(INTEG_COLOR[best_id_data]))
-        return str(INTEG_COLOR[best_id_data])
+        logging.debug("Selecting tuile for VIOLET POWER %s"%(World.INTEG_COLOR[best_id_data]))
+        return str(World.INTEG_COLOR[best_id_data])
 
     ## Return the best power choice
     def powerChoice(self, world):
         logging.debug("[IA] Trying to active power")
 
-        gameState = QUESTION_TYPE.POWER.value
+        gameState = AgentTypes.QUESTION_TYPE.POWER.value
         idata = world.getQLearningData(self.agentType, gameState)
         data = self.agent.process(idata)
         logging.debug("[IA] Got result from DQN: %s"%(data))
@@ -236,7 +236,7 @@ class SmartGameAgent(GameAgent):
     ## as a new state: S+1(q)
     def triggerNextState(self, world, gameState):
         logging.debug("[IA] Next state trigger, fetching game info...")
-        if not isinstance(gameState, QUESTION_TYPE):
+        if not isinstance(gameState, AgentTypes.QUESTION_TYPE):
             raise ValueError("Invalid game state")
         if self.agent.awaitingNextState():
             self.agent.next_state(world.getQLearningData(self.agentType, gameState))
@@ -278,7 +278,7 @@ class SmartGameAgent(GameAgent):
     ## Calculate a reward based on score, innocents people, etc
     def endOfHalfTour(self, world):
         logging.debug("[IA] Notified END OF TOUR. Calculating rewards...")
-        if self.agentType == PLAYER_TYPE.GHOST:
+        if self.agentType == AgentTypes.PLAYER_TYPE.GHOST:
             return self._processRewardGhost(world)
         return self._processRewardDetective(world)
 

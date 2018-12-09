@@ -1,8 +1,8 @@
 import logging
 import random
-from GameNode import GameNode
-from GameTree import GameTree
-from Parsing import QUESTION_TYPE
+from . import GameNode
+from . import GameTree
+from . import AgentTypes
 
 # -- GAME Constants --
 MAP_SIZE = 10
@@ -56,7 +56,7 @@ class World:
     tour = 0
     status = {}
     pos = []
-    gameTree = GameTree()
+    gameTree = GameTree.GameTree()
 
     def __init__(self, *args, **kwargs):
         pass
@@ -178,7 +178,7 @@ class World:
         return self.tour
 
     def getNode(self):
-        return GameNode(self.pos, [], "", self.score, False)
+        return GameNode.GameNode(self.pos, [], "", self.score, False)
 
     def getColor(self, node , infos) :
         for elem in infos :
@@ -221,11 +221,11 @@ class World:
 
     ## Update the state of the world depending on the questions
     def updateState(self, questionInfos):
-        if questionInfos["QuestionType"] == QUESTION_TYPE.MOVE:
+        if questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.MOVE:
             pass
-        elif questionInfos["QuestionType"] == QUESTION_TYPE.POWER:
+        elif questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.POWER:
             pass
-        elif questionInfos["QuestionType"] == QUESTION_TYPE.TUILES:
+        elif questionInfos["QuestionType"] == AgentTypes.QUESTION_TYPE.TUILES:
             self.updateTuiles(questionInfos["Data"])
     
     ## Update local tuiles infos

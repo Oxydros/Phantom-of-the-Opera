@@ -1,8 +1,8 @@
 import logging
 import sys
-from AlphaBetaDetective import AlphaBetaDetective
-from AlphaBetaFantome import AlphaBetaFantome
-from Parsing import PLAYER_TYPE
+from . import AlphaBetaDetective
+from . import AlphaBetaFantome
+from . import AgentTypes
 
 class GameAgent():
 
@@ -36,20 +36,20 @@ class GameAgent():
     ## Return the best tuile selection
     def selectTuile(self, root):
         logging.info("[IA] Trying to find best tuile")
-        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
-            alphaB = AlphaBetaFantome(root)
+        if (self.agentType != AgentTypes.PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome.AlphaBetaFantome(root)
         else :
-            alphaB = AlphaBetaDetective(root)
+            alphaB = AlphaBetaDetective.AlphaBetaDetective(root)
         node = alphaB.alpha_beta_search(root);
         nbAnswer = node.parent.color.index(node.sColor)
         return str(nbAnswer), node 
 
     ## Return the best next pos
     def nextPos(self, root):
-        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
-            alphaB = AlphaBetaFantome(root)
+        if (self.agentType != AgentTypes.PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome.AlphaBetaFantome(root)
         else :
-            alphaB = AlphaBetaDetective(root)
+            alphaB = AlphaBetaDetective.AlphaBetaDetective(root)
         node = alphaB.alpha_beta_search(root)
         if (node.move == '') :
             node = alphaB.alpha_beta_search(root)
@@ -58,11 +58,11 @@ class GameAgent():
 
     ## Return the best power choice
     def powerChoice(self, root):
-        if (self.agentType != PLAYER_TYPE.DETECTIVE) :
-            alphaB = AlphaBetaFantome(root)
+        if (self.agentType != AgentTypes.PLAYER_TYPE.DETECTIVE) :
+            alphaB = AlphaBetaFantome.AlphaBetaFantome(root)
         else :
-            alphaB = AlphaBetaDetective(root)
-        alphaB = AlphaBetaDetective(root)
+            alphaB = AlphaBetaDetective.AlphaBetaDetective(root)
+        alphaB = AlphaBetaDetective.AlphaBetaDetective(root)
         node = alphaB.alpha_beta_search(root)
         if (node.used == True and node.parent.used == False) :
             return str(1), node

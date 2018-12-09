@@ -1,5 +1,5 @@
 import re
-from AgentTypes import PLAYER_TYPE, QUESTION_TYPE, INFO_STATUS
+from . import AgentTypes
 
 class Parser :
     oldQuestion = ''
@@ -15,7 +15,7 @@ class Parser :
       return (a > b) - (a < b) 
 
     def __init__(self, player_type, *args):
-      if (player_type == PLAYER_TYPE.GHOST) :
+      if (player_type == AgentTypes.PLAYER_TYPE.GHOST) :
         self.responsesPath = './1/reponses.txt'
         self.questionsPath = './1/questions.txt'
         self.infoPath = './1/infos.txt'
@@ -46,7 +46,7 @@ class Parser :
       listInfoTourFound = re.findall(r'Tour:(\d*).*Score:(\d*).*Ombre:(\d*).*\{(.*)}\n(.*)', strInfo)
       if (len(listInfoTourFound) == 0) :
         return {
-          "InfoStatus" : INFO_STATUS.ERROR,
+          "InfoStatus" : AgentTypes.INFO_STATUS.ERROR,
           "Data" : "File is empty",
         }
       lastInfoTourFound = listInfoTourFound[-1]
@@ -57,11 +57,11 @@ class Parser :
         if (listLastPlacement != self.oldLastPlacement) :
           self.oldLastPlacement = listLastPlacement
           return {
-            "InfoStatus" : INFO_STATUS.PLACEMENT,
+            "InfoStatus" :  AgentTypes.INFO_STATUS.PLACEMENT,
             "Data" : listLastPlacement,
           }
         return {
-          "InfoStatus" : INFO_STATUS.ERROR,
+          "InfoStatus" : AgentTypes.INFO_STATUS.ERROR,
           "Data" : 'Nothing Change'
         }
       listTuilesAvailable = lastInfoTourFound[4].split('  ')
@@ -76,7 +76,7 @@ class Parser :
       regex = re.search(r'(\d*), (\d*)', lastInfoTourFound[3])
       lock = {int(regex.group(1)), int(regex.group(2))}
       infoTour =	{
-        "InfoStatus": INFO_STATUS.OK,
+        "InfoStatus": AgentTypes.INFO_STATUS.OK,
         "Tour": int(lastInfoTourFound[0]),
         "Score": int(lastInfoTourFound[1]),
         "Ombre": int(lastInfoTourFound[2]),
@@ -118,7 +118,7 @@ class Parser :
         })
 
       questionParsed = {
-        "QuestionType" : QUESTION_TYPE.TUILES,
+        "QuestionType" : AgentTypes.QUESTION_TYPE.TUILES,
         "Data" : listColorTuiles,
       }
       return questionParsed
@@ -140,17 +140,17 @@ class Parser :
                 'state' : tuileInfo[2]
               }
               return {
-                "QuestionType" : QUESTION_TYPE.P_BLANC,
+                "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLANC,
                 "Data" : listPositionsAvailable,
                 "Color" : color
               }
         return {
-          "QuestionType" : QUESTION_TYPE.MOVE,
+          "QuestionType" : AgentTypes.QUESTION_TYPE.MOVE,
           "Data" : listPositionsAvailable,
           "Color" : color
         }
       return {
-        "QuestionType": QUESTION_TYPE.ERROR,
+        "QuestionType": AgentTypes.QUESTION_TYPE.ERROR,
         "Data" : regex
       }
 
@@ -158,7 +158,7 @@ class Parser :
     def parsePower(self, question) :
       listPowerChoice = [0, 1]
       questionParsed = {
-        "QuestionType" : QUESTION_TYPE.POWER,
+        "QuestionType" : AgentTypes.QUESTION_TYPE.POWER,
         "Data" : listPowerChoice,
       }
       return questionParsed
@@ -169,12 +169,12 @@ class Parser :
                 positionsAvailable = regex.group(1).replace(' ', '')
                 listPositionsAvailable = positionsAvailable.split(',')
                 questionParsed = {
-                  "QuestionType" : QUESTION_TYPE.P_BLEU,
+                  "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLEU,
                   "Data" : listPositionsAvailable,
                 }
                 return questionParsed
           return {
-              "QuestionType": QUESTION_TYPE.ERROR,
+              "QuestionType": AgentTypes.QUESTION_TYPE.ERROR,
               "Data" : regex
             }
 
@@ -190,23 +190,23 @@ class Parser :
         return self.parsePosition(question)
       elif (question.find("Avec quelle couleur échanger (pas violet!) ?") != -1):
         return {
-          "QuestionType" : QUESTION_TYPE.P_VIOLET,
+          "QuestionType" : AgentTypes.QUESTION_TYPE.P_VIOLET,
           "Data" : None
         }
       elif (question.find("Quelle salle obscurcir ?") != -1):
         return {
-                  "QuestionType" : QUESTION_TYPE.P_GRIS,
+                  "QuestionType" : AgentTypes.QUESTION_TYPE.P_GRIS,
                   "Data" : None
               }
       elif (question.find("Quelle salle bloquer ?") != -1):
         return {
-          "QuestionType" : QUESTION_TYPE.P_BLEU,
+          "QuestionType" : AgentTypes.QUESTION_TYPE.P_BLEU,
           "Data": None
         }
       elif (question.find("Quelle sortie ?") != -1):
         return self.parseBluePosition(question)
       else :
-        return { "QuestionType" : QUESTION_TYPE.ERROR,
+        return { "QuestionType" : AgentTypes.QUESTION_TYPE.ERROR,
                 "Data" : "Unknow Question"}
 
 
@@ -223,7 +223,7 @@ class Parser :
       file.close()
       if (self.checkEndOfGame(infos) == True) :
         return {
-          "InfoStatus" : INFO_STATUS.END,
+          "InfoStatus" : AgentTypes.INFO_STATUS.END,
           "Data" : 'The game is over',
         }
       return self.getInfoTour(infos)
@@ -235,7 +235,7 @@ class Parser :
       file.close()
       if (self.checkNewQuestion(question) == True) :
         return self.findQuestion(question)
-      return { "QuestionType" : QUESTION_TYPE.ERROR,
+      return { "QuestionType" : AgentTypes.QUESTION_TYPE.ERROR,
                 "Data" : "No new question", }
 
 ## Write in the answerFile file
@@ -245,5 +245,5 @@ class Parser :
       file.close()
 
 if __name__ == "__main__":
-  test = Parser(PLAYER_TYPE.DETECTIVE)
+  test = Parser(AgentTypes.PLAYER_TYPE.DETECTIVE)
   tmp = test.readInfo()

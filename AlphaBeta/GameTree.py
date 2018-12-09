@@ -3,7 +3,7 @@ import copy
 import threading
 from enum import Enum
 import multiprocessing
-from GameNode import GameNode
+from . import GameNode
 
 
 DEF_ALLOWED_PATH = [{1,4}, {0,2}, {1,3}, {2,7}, {0,5,8}, {4,6}, {5,7}, {3,6,9}, {4,9}, {7,8}]
@@ -16,7 +16,7 @@ POWER_BOTH = {"rouge", "gris", "bleu"}
 class GameTree :
   
   def newDico(self, copyDico) :
-    dictio = GameNode(copy.deepcopy(copyDico.pos), copy.deepcopy(copyDico.color), copyDico.sColor, copy.copy(copyDico.score), copy.copy(copyDico.used))
+    dictio = GameNode.GameNode(copy.deepcopy(copyDico.pos), copy.deepcopy(copyDico.color), copyDico.sColor, copy.copy(copyDico.score), copy.copy(copyDico.used))
     return (dictio)
 
   def findListIndex(self, color, allPos) :
@@ -327,7 +327,7 @@ class GameTree :
             out_list = list()
             if (len(nodePowerAfter.color) != 0) :
               nodePowerAfter.used = False
-              nodePowerAfter = (self.doGameTree2(nodePowerAfter)).child
+              nodePowerAfter = (self.doGameTree(nodePowerAfter)).child
             else :
               nodePowerAfter.score = self.scoreCalcul(nodePowerAfter)
     return root

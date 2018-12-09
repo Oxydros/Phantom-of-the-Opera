@@ -1,9 +1,9 @@
 import logging
 import sys
-from GameAgent import SmartGameAgent, GameAgent
-from AgentTypes import PLAYER_TYPE, INFO_STATUS, QUESTION_TYPE
-from ParsingFile import Parser
-from World import World
+from . import GameAgent
+from . import AgentTypes
+from . import ParsingFile
+from . import World
 import time
 
 root = logging.getLogger()
@@ -32,14 +32,14 @@ class GameRunner(object):
 
 	## Process informations send by the server
 	def updateInfos(self, agentType, world, gameAgent, infoData, msgContent):
-		if infoData['InfoStatus'] == INFO_STATUS.CHANGE_HAND:
+		if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.CHANGE_HAND:
 			new_hand = infoData["Data"]
 			logging.debug("Change hand from %s to %s", self.current_hand, new_hand)
 			self.current_hand = new_hand
 			self._triggetNextState(world, gameAgent)
 			if new_hand == hand_name[agentType]:
 				world.setCurrentPlayedColor('none')
-		if infoData['InfoStatus'] == INFO_STATUS.OK:
+		if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.OK:
 			if msgContent.find("Rappel des positions :") == -1 and infoData.get('Tour', None) != None:
 				self._triggetNextState(world, gameAgent)
 			logging.debug("Got info TOUR %s"%(infoData))
@@ -49,19 +49,19 @@ class GameRunner(object):
 			# ##Notify agent to calcuate reward of previous tour
 			# if msgContent.find("Rappel des positions :") == -1 and infoData.get('Tour', None) != None:
 			# 	gameAgent.endOfHalfTour(world)
-		elif infoData['InfoStatus'] == INFO_STATUS.PLACEMENT:
+		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.PLACEMENT:
 			logging.debug("Got info PLACEMENT %s"%(infoData))
 			world.updateTuiles(infoData['Data'])
-		elif infoData['InfoStatus'] == INFO_STATUS.GHOST:
-			if agentType == PLAYER_TYPE.DETECTIVE:
+		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.GHOST:
+			if agentType == AgentTypes.PLAYER_TYPE.DETECTIVE:
 				raise RuntimeError("Received ghost but I am detective !")
 			logging.debug("Got info GHOST %s"%(infoData))
 			world.setGhostColor(infoData['Data'])
-		elif infoData['InfoStatus'] == INFO_STATUS.SUSPECT:
+		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.SUSPECT:
 			world.setInnocentColor(infoData['Data']['color'])
-		elif infoData['InfoStatus'] == INFO_STATUS.DRAW_GHOST:
+		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.DRAW_GHOST:
 			logging.debug("Draw FANTOME")
-		elif infoData['InfoStatus'] == INFO_STATUS.FINAL_SCORE:
+		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.FINAL_SCORE:
 			self._triggetNextState(world, gameAgent)
 			finalScore = infoData['Data']
 			if agentType == PLAYER_TYPE.GHOST:
@@ -86,23 +86,23 @@ class GameRunner(object):
 
 		self._triggetNextState(world, gameAgent)
 
-		if questionType == QUESTION_TYPE.MOVE:
+		if questionType == AgentTypes.QUESTION_TYPE.MOVE:
 			answer = gameAgent.nextCurrentColorPos(world, questionData["Data"])
-		elif questionType == QUESTION_TYPE.POWER:
+		elif questionType == AgentTypes.QUESTION_TYPE.POWER:
 			answer = gameAgent.powerChoice(world)
-		elif questionType == QUESTION_TYPE.TUILES:
+		elif questionType == AgentTypes.QUESTION_TYPE.TUILES:
 			answer = gameAgent.selectTuile(world, questionData["Data"])
-		elif questionType == QUESTION_TYPE.P_BLANC:
+		elif questionType == AgentTypes.QUESTION_TYPE.P_BLANC:
 			answer = gameAgent.nextPosColorWhitePower(world, questionData["Color"],
 			questionData["Data"])
-		elif questionType == QUESTION_TYPE.P_VIOLET:
+		elif questionType == AgentTypes.QUESTION_TYPE.P_VIOLET:
 			answer = gameAgent.selectTuileVioletPower(world)
-		elif questionType == QUESTION_TYPE.P_GRIS:
+		elif questionType == AgentTypes.QUESTION_TYPE.P_GRIS:
 			answer = gameAgent.nextPosBlackRoom(world)
-		elif questionType == QUESTION_TYPE.P_BLEU:
+		elif questionType == AgentTypes.QUESTION_TYPE.P_BLEU:
 			answer = gameAgent.nextBlockedPathBluePower(world,
 			questionData["Data"])
-		elif questionType == QUESTION_TYPE.ERROR:
+		elif questionType == AgentTypes.QUESTION_TYPE.ERROR:
 			raise ValueError("Unknown question " + msg.content)
 
 		logging.debug("Sending answer %s"%(answer))
@@ -118,7 +118,7 @@ class GameRunner(object):
 				logging.debug("MSG INFO: " + msg.content)
 				infoData = parser.parseInfo(msg.content)
 				self.updateInfos(agentType, world, gameAgent, infoData, msg.content)
-				if infoData['InfoStatus'] == INFO_STATUS.FINAL_SCORE:
+				if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.FINAL_SCORE:
     					return "Detected END TOUR"
 			elif msgType == "Question":
 				self.processQuestions(parser, world, msg, gameAgent)
@@ -131,13 +131,13 @@ def lancer(agentType, smart=True, training=False):
 	ch.setFormatter(formatter)
 	root.addHandler(ch)
 	print("Launching %s"%(hand_name[agentType]))
-	world = World()
-	parser = Parser(agentType)
+	world = World.World()
+	parser = ParsingFile.Parser(agentType)
 	gameAgent = None
 	if smart:
-			gameAgent = SmartGameAgent(agentType, training=training)
+			gameAgent = GameAgent.SmartGameAgent(agentType, training=training)
 	else:
-		gameAgent = GameAgent()
+		gameAgent = GameAgent.GameAgent()
 	runner = GameRunner(agentType)
 	runner.resetRunner()
 	parser.start()
