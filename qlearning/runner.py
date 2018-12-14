@@ -6,8 +6,8 @@ from . import ParsingFile
 from . import World
 import time
 
-root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+# root = logging.getLogger()
+# root.setLevel(logging.DEBUG)
 
 hand_name = ["l'inspecteur", "le fantome"]
 class GameRunner(object):
@@ -64,9 +64,9 @@ class GameRunner(object):
 		elif infoData['InfoStatus'] == AgentTypes.INFO_STATUS.FINAL_SCORE:
 			self._triggetNextState(world, gameAgent)
 			finalScore = infoData['Data']
-			if agentType == PLAYER_TYPE.GHOST:
+			if agentType == AgentTypes.PLAYER_TYPE.GHOST:
 				gameAgent.reward(-1 if finalScore > 0 and finalScore < 22 else 1)
-			elif agentType == PLAYER_TYPE.DETECTIVE:
+			elif agentType == AgentTypes.PLAYER_TYPE.DETECTIVE:
 				gameAgent.reward(1 if finalScore > 0 and finalScore < 22 else -1)
 
 	## Process a question send by the server
@@ -125,12 +125,11 @@ class GameRunner(object):
 		return "Unknown"
 
 def lancer(agentType, smart=True, training=False):
-	ch = logging.StreamHandler(sys.stdout)
-	ch.setLevel(logging.DEBUG)
-	formatter = logging.Formatter('%(asctime)s - '+ hand_name[agentType] +' - %(levelname)s - %(message)s')
-	ch.setFormatter(formatter)
-	root.addHandler(ch)
-	print("Launching %s"%(hand_name[agentType]))
+	# ch = logging.StreamHandler(sys.stdout)
+	# ch.setLevel(logging.CRITICAL)
+	# formatter = logging.Formatter('%(asctime)s - '+ hand_name[agentType] +' - %(levelname)s - %(message)s')
+	# ch.setFormatter(formatter)
+	# root.addHandler(ch)
 	world = World.World()
 	parser = ParsingFile.Parser(agentType)
 	gameAgent = None

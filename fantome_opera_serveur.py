@@ -1,7 +1,7 @@
 from random import shuffle,randrange
 from time import sleep
 from threading import Thread
-import dummy1, dummy3, dummy4, dummy5, dummy6
+import dummy0, dummy1
 
 latence = 0.01
 permanents, deux, avant, apres = {'rose'}, {'rouge','gris','bleu'}, {'violet','marron'}, {'noir','blanc'}
@@ -25,9 +25,11 @@ def demander(q,j):
     f.close()
     sleep(latence)
     f = open("./"+str(j.numero)+"/reponses"+".txt","r")
-    r = f.read()
+    # r = f.read()
+    r = f.readline()
     f.close()
-    informer("REPONSE DONNEE : "+r)
+    # informer("REPONSE DONNEE : "+r)
+    informer("REPONSE DONNEE : "+str(r))
     return r
 
 class personnage:
@@ -186,14 +188,6 @@ class partie:
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
 
 joueurs = [joueur(0),joueur(1)]
-t1 = Thread(target=dummy5.lancer)
-t2 = Thread(target=dummy6.lancer)
-
-t1.daemon = True
-t2.daemon = True
-t1.start()
-t2.start()
+Thread(target=dummy0.lancer).start()
+Thread(target=dummy1.lancer).start()
 partie(joueurs).lancer()
-
-t1.join()
-t2.join()

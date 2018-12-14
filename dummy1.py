@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from qlearning import runnerSocket
+from qlearning import runner
 from qlearning import AgentTypes
 
 def lancer():
-    runnerSocket.lancer(AgentTypes.PLAYER_TYPE.GHOST, smart = True, training = False)
+    runner.lancer(AgentTypes.PLAYER_TYPE.GHOST, smart = True, training = False)
 
 if __name__ == "__main__":
     lancer()
