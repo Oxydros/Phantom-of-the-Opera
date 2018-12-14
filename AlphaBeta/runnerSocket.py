@@ -2,7 +2,7 @@ import logging
 import sys
 from . import GameAgent
 from . import AgentTypes
-from . import ParsingSocket
+from . import ParsingFile
 from . import World
 
 root = logging.getLogger()
@@ -61,9 +61,9 @@ def loop(world, parser, d):
 
 def lancer(agentType):
     logging.info("Launching %s IA"%(agentType))
-    parser = ParsingSocket.Parser(agentType)
+    parser = ParsingFile.Parser(agentType)
     logging.info("Init network...")
-    parser.initNetwork()
+    parser.start()
     logging.info("Done!")
     while True:
         world = World.World()

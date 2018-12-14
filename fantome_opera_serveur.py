@@ -1,9 +1,9 @@
 from random import shuffle,randrange
 from time import sleep
 from threading import Thread
-import dummy0, dummy1, dummy3, dummy4, dummy5, dummy6
+import dummy1, dummy2, dummy3, dummy4, dummy5, dummy6
 
-latence = 2
+latence = 0.01
 permanents, deux, avant, apres = {'rose'}, {'rouge','gris','bleu'}, {'violet','marron'}, {'noir','blanc'}
 couleurs = avant | permanents | apres | deux
 passages = [{1,4},{0,2},{1,3},{2,7},{0,5,8},{4,6},{5,7},{3,6,9},{4,9},{7,8}]
@@ -186,8 +186,8 @@ class partie:
         return "Tour:" + str(self.num_tour) + ", Score:"+str(self.start)+"/"+str(self.end) + ", Ombre:" + str(self.shadow) + ", Bloque:" + str(self.bloque) +"\n" + "  ".join([str(p) for p in self.personnages])
 
 joueurs = [joueur(0),joueur(1)]
-t1 = Thread(target=dummy5.lancer)
-t2 = Thread(target=dummy6.lancer)
+t1 = Thread(target=dummy1.lancer)
+t2 = Thread(target=dummy2.lancer)
 
 t1.daemon = True
 t2.daemon = True

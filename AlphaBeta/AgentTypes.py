@@ -9,9 +9,10 @@ class QUESTION_TYPE(IntEnum):
       TUILES = 1
       POWER = 2
       MOVE = 3
-      GREY = 4
-      VIOLET = 5
-      BLUE = 6
+      P_VIOLET = 4
+      P_BLANC = 5
+      P_GRIS = 6
+      P_BLEU = 7
 
 class INFO_STATUS(IntEnum):
       ERROR = 0

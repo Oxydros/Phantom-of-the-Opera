@@ -34,6 +34,8 @@ def loop(world, parser, d):
             infoData = parser.parseInfo(msg.content)
             if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.END:
                 break
+            if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.FINAL_SCORE:
+                return "Detected END TOUR"
             updateInfos(world, infoData)
         elif msgType == "Question":
             questionData = parser.parseQuestion(msg.content)
