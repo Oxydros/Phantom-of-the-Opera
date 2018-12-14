@@ -13,6 +13,9 @@ class QUESTION_TYPE(IntEnum):
       P_BLANC = 5
       P_GRIS = 6
       P_BLEU = 7
+      GREY = 8
+      VIOLET = 9
+      BLUE = 10
 
 class INFO_STATUS(IntEnum):
       ERROR = 0
