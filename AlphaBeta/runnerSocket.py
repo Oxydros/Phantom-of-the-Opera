@@ -9,10 +9,6 @@ root = logging.getLogger()
 root.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
 
 def updateInfos(world, infoData):
     if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.OK:
@@ -59,7 +55,14 @@ def loop(world, parser, d):
             parser.sendMsg(answer) 
     return "Unknown"   
 
+hand_name = ["l'inspecteur", "le fantome"]
+
 def lancer(agentType):
+    ch.setLevel(logging.CRITICAL)
+    formatter = logging.Formatter('%(asctime)s - '+ hand_name[agentType] +' - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
     logging.info("Launching %s IA"%(agentType))
     parser = ParsingFile.Parser(agentType)
     logging.info("Init network...")

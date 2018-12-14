@@ -5,6 +5,11 @@ from . import AgentTypes
 from . import ParsingFile
 from . import World
 
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler(sys.stdout)
+
 def updateInfos(world, infoData):
     if infoData['InfoStatus'] == AgentTypes.INFO_STATUS.OK:
         world.setStatus(infoData)
@@ -46,7 +51,13 @@ def loop(world, parser, d):
             parser.sendMsg(answer) 
     return "Unknown"   
 
+hand_name = ["l'inspecteur", "le fantome"]
+
 def lancer(agentType):
+    ch.setLevel(logging.CRITICAL)
+    formatter = logging.Formatter('%(asctime)s - '+ hand_name[agentType] +' - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
     parser = ParsingFile.Parser(agentType)
     parser.start()
     world = World.World()
