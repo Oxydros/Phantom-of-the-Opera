@@ -1,40 +1,27 @@
 # IA_Fantom_of_The_Opera
 
+## Installation
+
+Ce programme nécessite pytorch et python 3.7
+
 ## 2 Agents
 
 * Fantom
 * Detective
 
-## Alpha beta
+## 2 IA
 
-### 3 questions to answer to
+Nous avons développé ces 2 agents suivant 2 types d'algorithmes: Alpha-Beta et Deep QLearning (DQN).  
+Les dummy0 et dummy1 sont nos 2 IA rendu pour ce module.  
+En effet, après différents tests, il se trouve que l'alpha-beta est plus fort que le DQN mais le temps de calcul est bcp  
+trop long entre chaque coup. La latence du serveur état de 0.01, notre agent n'a pas le temps de prendre une décision.  
 
-* Selection of colors, noted E0
-* Selection of Power, noted E1
-* Selection of Deplacement, noted E2
+Nous soumettons donc dans ces 2 dummies les agents basés sur le DQN. La encore la latence du serveur, qui est de 0.01 par default  
+nous empêche de temps en temsp de répondre dans les temps, décalant alors tout nos réponses pour les questions suivantes.  
+  
+Monter la latence du serveur à 0.1 devrait résoudre le problème.  
 
-When we talk about all of this questions, we will use the E* notation.
-
-### Data
-
-We can find different type of informations, defining the state:
-* Position of the colors (room they are in) -> **D0** *88 data points*
-* Position of the lock -> **D1** *2 data points*
-* Position of the light -> **D2** *1 data point*
-* Score of the game -> **D3** *1 data point*
-* Color of the fantom -> **D4** *1 data point*
-* Was the agent the first one of the "tour" -> **D5** *1 data point*
-* 4 selected colors to play -> **D6** *4 data points*
-* Color choosed to be played -> **D7** *1 data point*
-
-|    | D0 | D1 | D2 | D3 | D4 | D5 | D6 | D7 | Size |
-|----|----|----|----|----|----|----|----|----|------|
-| E0 | X  | X  | X  | X  | X  | X  |    |    | 106  |
-| E1 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
-| E2 | X  | X  | X  | X  | X  | X  |    | X  | 107  |
-
-## Reinforcement learning using Deep QLearning
-## Data
+## Définition d'un état du jeu et des questions possibles
 
 Nous considérons chaque action du jeu comme un bouton sur un controleur.  
 L'agent va apprendre qu'en fonction de certains état du jeu des boutons sont plus  
