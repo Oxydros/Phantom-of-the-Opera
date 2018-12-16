@@ -153,6 +153,8 @@ class SmartGameAgent(GameAgent):
             world.setBlockedPathByIdx(best_id_data, 0)
 
         logging.debug("Selecting position %s for BLEU"%(best_id_data))
+        if available_pos != None:
+            return str(best_id_data)
         return (str(best_id_rep))
 
     ## Select the best position for gris power token
