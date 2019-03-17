@@ -41,5 +41,5 @@ _Default is file communication, because the professor wanted it that way._
 
 ### Contact
 
-Oïhan CAILLAUD (@ourdin)
-Louis VENTRE (@oxydros)
+- Oïhan CAILLAUD (@ourdin)
+- Louis VENTRE (@oxydros)
