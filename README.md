@@ -1,77 +1,40 @@
-# IA_Fantom_of_The_Opera
+# AI: Phantom of The Opera
+
+## Introduction
+
+This is a school project for the Artificial Intelligence course.  
+The aim is to create two AIs that will play the **Detective** and the **Phantom** for the board game [Phantom of the Opera](https://boardgamegeek.com/boardgame/29910/phantom-opera-mystery-game).  
+In the end, all the AI of course's student will compete against each other to determine which one is the best.  
+  
+We **HAD** to comply to the server located in this repository: https://github.com/groznyniko/ia_fopera.  
+  
+_We are french developers, and we mostly called the Phantom as Ghost inside our code. Sorry :)_
+
+## Algorithms
+
+We had two main goals doing this project: learn about AI, and win the tournament.  
+We did two algorithm:
+- **AlphaBeta**
+- Reinforcment learning using **Deep Q-Network**. We inspired ourselves from the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/pdf/1312.5602.pdf)
 
 ## Installation
 
-Ce programme nécessite pytorch et python 3.7
+### Libraries
 
-## 2 Agents
+You need to have installed Python 3.7 and PyTorch v0.4.1 or superior.  
+_You may have a warning, look here https://discuss.pytorch.org/t/about-pytorch-update/476_
 
-* Fantom
-* Detective
+### Launch it
 
-## 2 IA
-
-Nous avons développé ces 2 agents suivant 2 types d'algorithmes: Alpha-Beta et Deep QLearning (DQN).  
-Les dummy0 et dummy1 sont nos 2 IA rendu pour ce module.  
-En effet, après différents tests, il se trouve que l'alpha-beta est plus fort que le DQN mais le temps de calcul est bcp  
-trop long entre chaque coup. La latence du serveur état de 0.01, notre agent n'a pas le temps de prendre une décision.  
-
-Nous soumettons donc dans ces 2 dummies les agents basés sur le DQN. La encore la latence du serveur, qui est de 0.01 par default  
-nous empêche de temps en temsp de répondre dans les temps, décalant alors tout nos réponses pour les questions suivantes.  
+You can find 4 `dummy.py` files:
+- Dummy0 and Dummy1 are the Detective and Phantom agents using the **DQN**
+- Dummy2 and Dummy3 are the Detective and Phantom agents using the **Alpha Beta**
   
-Monter la latence du serveur à 0.1 devrait résoudre le problème.  
-
-## Définition d'un état du jeu et des questions possibles
-
-Nous considérons chaque action du jeu comme un bouton sur un controleur.  
-L'agent va apprendre qu'en fonction de certains état du jeu des boutons sont plus  
-utiles que d'autre.  
+Communication between the clients and the server is inside the `runner.py` or `runnerSocket.py`.  
+By default, all the dummies use the `runner.py`.  
   
-Differents choix possibles au cours du jeu (actions):
-* Choix d'une couleur (8 couleurs => 8 actions)
-* Choix d'une position (10 salles => 10 actions)
-* Choix d'utiliser un pouvoir (Oui ou Non => 2 actions)
+There is two different servers:
+- `fantome_opera_serveur.py` uses files to communicate with the clients. Use `runner.py`(default) in your dummies.  
+- `fantome_opera_serveur_socket.py` uses sockets to communicate with the clients. It's by far the best way to test this project. To do so, you need to use the `runnerSocket` inside the dummies, instead of the basic `runner`.
 
-Le nombre d'actions est donc de **20**
-
-On peut remarque que une couleur actuelle est nécessaire dans l'etat du jeu.    
-  
-On peut identifier différentes étapes uniques au cours du jeu, qui se relaient de façon cyclique:  
-* Sélection d'une carte
-* Pouvoir Oui/Non
-* Déplacement
-* Sélection carte pouvoir violet
-* Sélection position pouvoir blanc
-* Sélection position pouvoir gris
-* Sélection position pouvoir bleu
-  
-Basé sur ces observations, on peut déterminer les informations requises dans le state du jeu:
-* Position des couleurs => 8 integer ayant une valeur de 0 à 9, représentant la salle dans laquelle ils sont
-* L'état d'innoncence des couleurs => 8 entiers, ayant pour valeur 0 si ils sont suspects ou 1 si ils sont innocents
-* Position du locker => 2 integer ayant une valeur de 0 à 9, indiquant le chemin bloqué entre deux salles
-* Position de la salle noir => 1 integer ayant une valeur de 0 à 9, indiquant quelle salle est sombre
-* Le score du jeu => 1 entier ayant une valeur > 0
-* La couleur selectionnée => 1 entier ayant une valeur comprise entre 0 et 8, représentant la couleur actuelle à jouer
-* L'état du jeu => 1 entier ayant une valeur >= 0 et <= 6 représentant les différents états cités plus haut
-  
-Seulement pour le fantome: 
-* Le numéros de la couleur fantome
-
-La taille de la data est donc de:
-* **22** pour le detective
-* **23** pour le ghost
-
-Gestion des states:
-* Chaque question enchaine une action. Nous représentons ici une question par *q*
-* Pour chaque action, on enregistre l'état *S(q)*, l'action, le reward et l'état *S+1(q)*
-* L'état **S(q)** est l'état au moment de la question, il est donc trivial à obtenir
-* L'état **S+1(q)** est l'état du jeu suite à l'interprétation de notre réponse par le serveur.
-
-Nous pouvons remarquer 3 différentes façon d'obtenir cet état **S+1(q)**:
-* Lors d'une nouvelle question qui suit la précédente. On a donc **S+1(q) = S(q + 1)**
-* Lors d'un changement de main. Si le tour passe du fantome au detective ou vice versa, on sait que l'état actuel du jeu fait suite à la derniere action du fantome ou du detective.
-* Lors du début d'un nouveau tour.
-
-## Links
-https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
-
+_Default is file communication, because the professor wanted it that way._
