@@ -4,7 +4,7 @@
 
 This is a school project for the Artificial Intelligence course.  
 The aim is to create two AIs that will play the **Detective** and the **Phantom** for the board game [Phantom of the Opera](https://boardgamegeek.com/boardgame/29910/phantom-opera-mystery-game).  
-In the end, all the AI of course's student will compete against each other to determine which one is the best.  
+In the end, all the AI of course's student will compete against each others to determine which one is the best.  
   
 We **HAD** to comply to the server located in this repository: https://github.com/groznyniko/ia_fopera.  
   
@@ -13,7 +13,7 @@ _We are french developers, and we mostly called the Phantom as Ghost inside our 
 ## Algorithms
 
 We had two main goals doing this project: learn about AI, and win the tournament.  
-We did two algorithm:
+We did two algorithms:
 - **AlphaBeta**
 - Reinforcment learning using **Deep Q-Network**. We inspired ourselves from the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/pdf/1312.5602.pdf)
 
@@ -21,7 +21,7 @@ We did two algorithm:
 
 ### Libraries
 
-You need to have installed Python 3.7 and PyTorch v0.4.1 or superior.  
+You need to have Python 3.7 and PyTorch v0.4.1 or superior installed.  
 _You may have a warning, look here https://discuss.pytorch.org/t/about-pytorch-update/476_
 
 ### Launch it
@@ -30,7 +30,7 @@ You can find 4 `dummy.py` files:
 - Dummy0 and Dummy1 are the Detective and Phantom agents using the **DQN**
 - Dummy2 and Dummy3 are the Detective and Phantom agents using the **Alpha Beta**
   
-Communication between the clients and the server is inside the `runner.py` or `runnerSocket.py`.  
+Communication code between the clients and the server is inside the `runner.py` or `runnerSocket.py`.  
 By default, all the dummies use the `runner.py`.  
   
 There is two different servers:
