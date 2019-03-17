@@ -38,3 +38,8 @@ There is two different servers:
 - `fantome_opera_serveur_socket.py` uses sockets to communicate with the clients. It's by far the best way to test this project. To do so, you need to use the `runnerSocket` inside the dummies, instead of the basic `runner`.
 
 _Default is file communication, because the professor wanted it that way._
+
+### Contact
+
+Oïhan CAILLAUD (@ourdin)
+Louis VENTRE (@oxydros)
